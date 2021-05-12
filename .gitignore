@@ -1,5 +1,7 @@
 /cmake-build-debug/
 /.idea/
+/InstanceGenerator/
+*.pdf
 
 # Prerequisites
 *.d
