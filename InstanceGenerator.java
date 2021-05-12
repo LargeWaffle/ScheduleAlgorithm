@@ -18,9 +18,9 @@ import java.util.logging.Logger;
  */
 public class InstanceGenerator {
 
-    public static int NBR_APPRENANTS = 2;
+    public static int NBR_APPRENANTS = 10;
     public static int NBR_COURS_PAR_SEMAINE = 4; // max 10 demi-journées par apprenant
-    public static int NBR_CENTRES_FORMATION = 3; 
+    public static int NBR_CENTRES_FORMATION = 3;
 
     public static int DIMENSION_ZONE_GEOGRAPHIQUE = 200;
 
@@ -72,18 +72,17 @@ public class InstanceGenerator {
 
     //#include <stdio.h>
     //
-    //#define NBR_INTERFACES        10 
-    //#define NBR_APPRENANTS	       8 
-    //#define NBR_CENTRES_FORMATION  3 
-    //#define NBR_SPECIALITES        3 
+    //#define NBR_INTERFACES        10
+    //#define NBR_APPRENANTS	       8
+    //#define NBR_CENTRES_FORMATION  3
+    //#define NBR_SPECIALITES        3
     //#define NBR_NODES 	       NBR_CENTRES_FORMATION+NBR_INTERFACES+NBR_APPRENANTS
     //
     ///* code des compétence en langage des signes et en codage LPC */
-    //#define COMPETENCE_SIGNES      0 
-    //#define COMPETENCE_CODAGE      1 
+    //#define COMPETENCE_SIGNES      0
+    //#define COMPETENCE_CODAGE      1
     private void writeHeader() {
         try {
-            textFileOutput.write("#include <stdio.h>\n");
             textFileOutput.write("                  \n");
             textFileOutput.write("#define NBR_INTERFACES        " + NBR_INTERFACES + "\n");
             textFileOutput.write("#define NBR_APPRENANTS        " + NBR_APPRENANTS + "\n");
@@ -121,7 +120,6 @@ public class InstanceGenerator {
             textFileOutput.write("    {1,0}, /* compétence en langages des SIGNES mais pas en CODAGE LPC */\n");
             textFileOutput.write("    {0,1}, /* pas de compétence en langages des SIGNES mais compétence en CODAGE LPC */\n");
             int maxi = NBR_INTERFACES - 2;
-
             for (int i = 0; i < maxi; i++) {
                 if (rand.nextDouble() < 0.5) {
                     textFileOutput.write("    {1,0}");
@@ -142,10 +140,10 @@ public class InstanceGenerator {
     }
 
     ///* spécialités des interfaces */
-    //#define SPECIALITE_SANS       -1 
-    //#define SPECIALITE_MENUISERIE  0 
-    //#define SPECIALITE_ELECTRICITE 1 
-    //#define SPECIALITE_MECANIQUE   2 
+    //#define SPECIALITE_SANS       -1
+    //#define SPECIALITE_MENUISERIE  0
+    //#define SPECIALITE_ELECTRICITE 1
+    //#define SPECIALITE_MECANIQUE   2
     //
     ///* specialite des interfaces */
     //int specialite_interfaces[NBR_INTERFACES][NBR_SPECIALITES]={
@@ -216,7 +214,7 @@ public class InstanceGenerator {
     //    {580.0,1175.0},
     //    {650.0,1130.0},
     //    {1605.0,620.0},
-    //    {1220.0,580.0}, 
+    //    {1220.0,580.0},
     //    {1465.0,200.0},
     //    {1530.0,5.0}, /* point de départ apprenants */
     //    {845.0,680.0},
@@ -300,7 +298,7 @@ public class InstanceGenerator {
     //    {0,SPECIALITE_ELECTRICITE, COMPETENCE_SIGNES, JEUDI, 8, 12},
     //    {6,SPECIALITE_SANS, COMPETENCE_CODAGE, JEUDI, 14, 17},
     //    {7,SPECIALITE_ELECTRICITE, COMPETENCE_CODAGE, VENDREDI, 8, 11}
-    //} ;    
+    //} ;
     private void writeFormation() {
         try {
             textFileOutput.write("#define NBR_FORMATION          " + NBR_FORMATIONS + "\n");
@@ -319,10 +317,10 @@ public class InstanceGenerator {
 
             int maxi = NBR_APPRENANTS;
             // public static int NBR_FORMATIONS = NBR_APPRENANTS * NBR_COURS_PAR_SEMAINE;
-            for (int i = 0; i < maxi; i++) { // Apprenant i 
+            for (int i = 0; i < maxi; i++) { // Apprenant i
                 // {0,SPECIALITE_ELECTRICITE, COMPETENCE_SIGNES, LUNDI, 13, 16},
                 int maxj = NBR_COURS_PAR_SEMAINE ;
-                for (int j = 0; j < maxj; j++) { // Apprenant i 
+                for (int j = 0; j < maxj; j++) { // Apprenant i
                     int spe = rand.nextInt(NBR_SPECIALITES);
                     String specialite = NOMS_SPECIALITES[spe];
                     String competence = NOMS_COMPETENCES[rand.nextInt(NBR_COMPETENCES)];
@@ -360,15 +358,7 @@ public class InstanceGenerator {
 //}
     private void writeMain() {
         try {
-            textFileOutput.write("void initConfig() {\n");
-            textFileOutput.write("                  \n");
-            textFileOutput.write("    printf(\"NBR_INTERFACES=%d\\n\",NBR_INTERFACES) ;\n");
-            textFileOutput.write("    printf(\"NBR_APPRENANTS=%d\\n\",NBR_APPRENANTS) ;\n");
-            textFileOutput.write("    printf(\"NBR_NODES=%d\\n\",NBR_NODES) ;\n");
-            textFileOutput.write("                  \n");
-            //textFileOutput.write("    return 0 ;\n");
-            textFileOutput.write("}\n");
-            textFileOutput.write("                  \n");
+            textFileOutput.write("\n//End of File");
         } catch (IOException ex) {
             Logger.getLogger(InstanceGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }

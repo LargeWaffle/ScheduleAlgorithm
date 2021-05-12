@@ -7,9 +7,11 @@ using namespace std;
 
 class Interface{
 
-protected:
+public:
     short int specialty;
     multiset<int> competence;
 
 };
+
+
 #endif //SCHEDULEALGORITHM_INTERFACE_H
