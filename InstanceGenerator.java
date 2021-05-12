@@ -27,7 +27,7 @@ public class InstanceGenerator {
     public static int NBR_INTERFACES = (int) (NBR_APPRENANTS * 1.2);
     public static int NBR_FORMATIONS = NBR_APPRENANTS * NBR_COURS_PAR_SEMAINE;
 
-    public static String FILENAME = "instance-" + NBR_FORMATIONS + "formations.cpp";
+    public static String FILENAME = "InstanceFormations.h";
 
     public static int NBR_COMPETENCES = 2;
     public static String NOMS_COMPETENCES[] = {
@@ -121,6 +121,7 @@ public class InstanceGenerator {
             textFileOutput.write("    {1,0}, /* compétence en langages des SIGNES mais pas en CODAGE LPC */\n");
             textFileOutput.write("    {0,1}, /* pas de compétence en langages des SIGNES mais compétence en CODAGE LPC */\n");
             int maxi = NBR_INTERFACES - 2;
+
             for (int i = 0; i < maxi; i++) {
                 if (rand.nextDouble() < 0.5) {
                     textFileOutput.write("    {1,0}");
@@ -359,13 +360,13 @@ public class InstanceGenerator {
 //}
     private void writeMain() {
         try {
-            textFileOutput.write("int main() {\n");
+            textFileOutput.write("void initConfig() {\n");
             textFileOutput.write("                  \n");
             textFileOutput.write("    printf(\"NBR_INTERFACES=%d\\n\",NBR_INTERFACES) ;\n");
             textFileOutput.write("    printf(\"NBR_APPRENANTS=%d\\n\",NBR_APPRENANTS) ;\n");
             textFileOutput.write("    printf(\"NBR_NODES=%d\\n\",NBR_NODES) ;\n");
             textFileOutput.write("                  \n");
-            textFileOutput.write("    return 0 ;\n");
+            //textFileOutput.write("    return 0 ;\n");
             textFileOutput.write("}\n");
             textFileOutput.write("                  \n");
         } catch (IOException ex) {
