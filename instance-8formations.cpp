@@ -23,6 +23,7 @@ int competences_interfaces[NBR_INTERFACES][2]={
 #define SPECIALITE_MECANIQUE   2
                   
 /* specialite des interfaces */
+/*  {menuiserie, electricite, mecanique} */
 int specialite_interfaces[NBR_INTERFACES][NBR_SPECIALITES]={
     {1,1,0},
     {0,0,0}
