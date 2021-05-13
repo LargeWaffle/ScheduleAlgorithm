@@ -26,6 +26,28 @@ float evaluatePop(Interface Population[])
 }
 */
 
+/*
+void test(){
+    Interface population[NBR_INTERFACES];
+    multiset<int> t;
+    t.insert(3);
+    list<int> lint (3,5);
+    list<map<int, string>> lmapstr;
+    map<int, string> bonjour;
+
+    bonjour[0] = "c";
+    bonjour[1] = "3";
+    bonjour[2] = "4";
+
+    lmapstr.push_back(bonjour);
+
+    cout << "Entry point" << endl;
+
+    Interface int1(3, t, lint, lmapstr);
+
+}
+
+*/
 int main(){
     cout << "IT45 - Probleme d’affectation d’employes\n" << endl;
     cout << "Configuration of the problem" << endl;
