@@ -16,17 +16,48 @@ public:
     list< map<int, string> > time_table;
     int distance;   // distance travelled by the Interface
 
-    Interface(): assigned_apprentice(), time_table(), distance(0)
-    {
+    Interface(): assigned_apprentice(), time_table(), distance(0){
+
         competence = new int[2];
         speciality = new int[3];
+    }
 
-    };
+    ~Interface(){
 
-    ~Interface()
-    {
         delete [] competence;
         delete [] speciality;
+    }
+
+    void displayInterface(){
+
+        cout << "___ Interface ___ " << endl;
+
+        cout << "Competences" << endl;
+        cout << "[ " << competence[0] << ", " << competence[1] << " ]" << endl;
+
+        cout << "Speciality" << endl;
+        cout << "[ " << speciality[0] << ", " << speciality[1] << " ," << speciality[2] << " ]" << endl;
+
+        if(!assigned_apprentice.empty())
+        {
+            // Display list of assigned apprentice
+
+            cout << "List of apprentices" << endl;
+
+            cout << "IDs =  { ";
+            for (int elem : assigned_apprentice)
+                cout << elem << ", ";
+            cout << " };\n";
+        }
+        else
+            cout << "Interface has no one to work with !" << endl;
+
+        cout << "and he travelled " << distance << " kms" << endl;
+        cout << "___ End of display ___" << endl;
+    }
+
+    void displayTimeTable(){
+
     }
 };
 
