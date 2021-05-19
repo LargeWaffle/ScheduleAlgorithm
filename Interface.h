@@ -1,31 +1,33 @@
 #ifndef SCHEDULEALGORITHM_INTERFACE_H
 #define SCHEDULEALGORITHM_INTERFACE_H
 
-#include <set>
 #include <string>
 #include <list>
 #include <map>
-#include <utility>
+
 using namespace std;
 
 class Interface{
 
-protected:
-    short int speciality;
-    multiset<int> competence;
-    list<int> apprentice;
-    list<map<int, string>> time_table;
-    /* format horaire */
-    /* distance parcourue */
 public:
-    Interface(){};
-    Interface(short int a, multiset<int> b, list<int> c, list<map<int, string>> d);
+    int *competence;   // sign and/or LPC
+    int *speciality;   // list of the interface's specialty (max 3)
+    list<int> assigned_apprentice;   // list of apprentices ids
+    list< map<int, string> > time_table;
+    int distance;   // distance travelled by the Interface
+
+    Interface(): assigned_apprentice(), time_table(), distance(0)
+    {
+        competence = new int[2];
+        speciality = new int[3];
+
+    };
+
+    ~Interface()
+    {
+        delete [] competence;
+        delete [] speciality;
+    }
 };
 
-Interface::Interface(short int a, multiset<int> b, list<int> c, list <map<int, string>> d) {
-    speciality = a;
-    competence = std::move(b);
-    apprentice = std::move(c);
-    time_table = std::move(d);
-}
 #endif //SCHEDULEALGORITHM_INTERFACE_H
