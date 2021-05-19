@@ -18,16 +18,20 @@ import java.util.logging.Logger;
  */
 public class InstanceGenerator {
 
-    public static int NBR_APPRENANTS = 10;
-    public static int NBR_COURS_PAR_SEMAINE = 4; // max 10 demi-journées par apprenant
-    public static int NBR_CENTRES_FORMATION = 3;
+//    public static int NBR_APPRENANTS = 20;
+//    public static int NBR_FORMATIONS_PAR_SEMAINE = 4; // max 10 demi-journées par apprenant
+
+    public static int NBR_APPRENANTS = 5*4;
+    public static int NBR_FORMATIONS_PAR_SEMAINE = 2;
+
+    public static int NBR_CENTRES_FORMATION = 3; 
 
     public static int DIMENSION_ZONE_GEOGRAPHIQUE = 200;
 
     public static int NBR_INTERFACES = (int) (NBR_APPRENANTS * 1.2);
-    public static int NBR_FORMATIONS = NBR_APPRENANTS * NBR_COURS_PAR_SEMAINE;
+    public static int NBR_FORMATIONS = NBR_APPRENANTS * NBR_FORMATIONS_PAR_SEMAINE;
 
-    public static String FILENAME = "InstanceFormations.h";
+    public static String FILENAME = "instance-formations.h";
 
     public static int NBR_COMPETENCES = 2;
     public static String NOMS_COMPETENCES[] = {
@@ -72,23 +76,24 @@ public class InstanceGenerator {
 
     //#include <stdio.h>
     //
-    //#define NBR_INTERFACES        10
-    //#define NBR_APPRENANTS	       8
-    //#define NBR_CENTRES_FORMATION  3
-    //#define NBR_SPECIALITES        3
+    //#define NBR_INTERFACES        10 
+    //#define NBR_APPRENANTS	       8 
+    //#define NBR_CENTRES_FORMATION  3 
+    //#define NBR_SPECIALITES        3 
     //#define NBR_NODES 	       NBR_CENTRES_FORMATION+NBR_INTERFACES+NBR_APPRENANTS
     //
     ///* code des compétence en langage des signes et en codage LPC */
-    //#define COMPETENCE_SIGNES      0
-    //#define COMPETENCE_CODAGE      1
+    //#define COMPETENCE_SIGNES      0 
+    //#define COMPETENCE_CODAGE      1 
     private void writeHeader() {
         try {
             textFileOutput.write("                  \n");
             textFileOutput.write("#define NBR_INTERFACES        " + NBR_INTERFACES + "\n");
             textFileOutput.write("#define NBR_APPRENANTS        " + NBR_APPRENANTS + "\n");
+            textFileOutput.write("#define NBR_FORMATIONS        " + NBR_FORMATIONS + "\n");
             textFileOutput.write("#define NBR_CENTRES_FORMATION " + NBR_CENTRES_FORMATION + "\n");
             textFileOutput.write("#define NBR_SPECIALITES       " + NBR_SPECIALITES + "\n");
-            textFileOutput.write("#define NBR_NODES 	      NBR_CENTRES_FORMATION+NBR_INTERFACES+NBR_APPRENANTS\n");
+            textFileOutput.write("#define NBR_NODES 	      NBR_CENTRES_FORMATION + NBR_INTERFACES + NBR_APPRENANTS\n");
             textFileOutput.write("                  \n");
             textFileOutput.write("/* code des compétence en langage des signes et en codage LPC */\n");
             textFileOutput.write("#define COMPETENCE_SIGNES     0\n");
@@ -121,7 +126,10 @@ public class InstanceGenerator {
             textFileOutput.write("    {0,1}, /* pas de compétence en langages des SIGNES mais compétence en CODAGE LPC */\n");
             int maxi = NBR_INTERFACES - 2;
             for (int i = 0; i < maxi; i++) {
-                if (rand.nextDouble() < 0.5) {
+		double f = rand.nextDouble() ;
+                if (f < 0.1) {
+                    textFileOutput.write("    {1,0}");
+                } else if (f < 0.55) {
                     textFileOutput.write("    {1,0}");
                 } else {
                     textFileOutput.write("    {0,1}");
@@ -140,10 +148,10 @@ public class InstanceGenerator {
     }
 
     ///* spécialités des interfaces */
-    //#define SPECIALITE_SANS       -1
-    //#define SPECIALITE_MENUISERIE  0
-    //#define SPECIALITE_ELECTRICITE 1
-    //#define SPECIALITE_MECANIQUE   2
+    //#define SPECIALITE_SANS       -1 
+    //#define SPECIALITE_MENUISERIE  0 
+    //#define SPECIALITE_ELECTRICITE 1 
+    //#define SPECIALITE_MECANIQUE   2 
     //
     ///* specialite des interfaces */
     //int specialite_interfaces[NBR_INTERFACES][NBR_SPECIALITES]={
@@ -214,7 +222,7 @@ public class InstanceGenerator {
     //    {580.0,1175.0},
     //    {650.0,1130.0},
     //    {1605.0,620.0},
-    //    {1220.0,580.0},
+    //    {1220.0,580.0}, 
     //    {1465.0,200.0},
     //    {1530.0,5.0}, /* point de départ apprenants */
     //    {845.0,680.0},
@@ -298,7 +306,7 @@ public class InstanceGenerator {
     //    {0,SPECIALITE_ELECTRICITE, COMPETENCE_SIGNES, JEUDI, 8, 12},
     //    {6,SPECIALITE_SANS, COMPETENCE_CODAGE, JEUDI, 14, 17},
     //    {7,SPECIALITE_ELECTRICITE, COMPETENCE_CODAGE, VENDREDI, 8, 11}
-    //} ;
+    //} ;    
     private void writeFormation() {
         try {
             textFileOutput.write("#define NBR_FORMATION          " + NBR_FORMATIONS + "\n");
@@ -311,16 +319,16 @@ public class InstanceGenerator {
             textFileOutput.write("#define SAMEDI                 6\n");
             textFileOutput.write("                  \n");
 
-            textFileOutput.write("/* formation : apprenant, specialite ou centre de formation, competence, horaire debut formation, horaire fin formation */\n");
+            textFileOutput.write("/* formation : id formation, specialite ou centre de formation, competence, horaire debut formation, horaire fin formation */\n");
 
             textFileOutput.write("int formation[NBR_FORMATION][6]={\n");
 
             int maxi = NBR_APPRENANTS;
-            // public static int NBR_FORMATIONS = NBR_APPRENANTS * NBR_COURS_PAR_SEMAINE;
-            for (int i = 0; i < maxi; i++) { // Apprenant i
+            // public static int NBR_FORMATIONS = NBR_APPRENANTS * NBR_FORMATIONS_PAR_SEMAINE;
+            for (int i = 0; i < maxi; i++) { // Apprenant i 
                 // {0,SPECIALITE_ELECTRICITE, COMPETENCE_SIGNES, LUNDI, 13, 16},
-                int maxj = NBR_COURS_PAR_SEMAINE ;
-                for (int j = 0; j < maxj; j++) { // Apprenant i
+                int maxj = NBR_FORMATIONS_PAR_SEMAINE ;
+                for (int j = 0; j < maxj; j++) { // Apprenant i 
                     int spe = rand.nextInt(NBR_SPECIALITES);
                     String specialite = NOMS_SPECIALITES[spe];
                     String competence = NOMS_COMPETENCES[rand.nextInt(NBR_COMPETENCES)];
@@ -336,29 +344,24 @@ public class InstanceGenerator {
 
                     }
                     textFileOutput.write("   {" + i + "," + specialite + "," + competence + "," + jour + "," + hdebut + "," + hfin + "}");
-                    if (i < maxi - 1) {
+                    if (i < maxi - 1 || j < maxj - 1) {
                         textFileOutput.write(",\n");
-                    } else  if (i >= maxi - 1 && j < maxj -1){
-                        textFileOutput.write(",\n");
+                    } else {
+                        textFileOutput.write("\n};\n");
                     }
                 }
             }
-            textFileOutput.write("\n};\n");
+
+            textFileOutput.write("                  \n");
         } catch (IOException ex) {
             Logger.getLogger(InstanceGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-//int main() {
-//    printf("NBR_INTERFACES=%d\n",NBR_INTERFACES) ;
-//    printf("NBR_APPRENANTS=%d\n",NBR_APPRENANTS) ;
-//    printf("NBR_NODES=%d\n",NBR_NODES) ;
-//
-//    return 0 ;
-//}
     private void writeMain() {
         try {
-            textFileOutput.write("\n//End of File");
+            textFileOutput.write("\n//EOF\n");
+
         } catch (IOException ex) {
             Logger.getLogger(InstanceGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }

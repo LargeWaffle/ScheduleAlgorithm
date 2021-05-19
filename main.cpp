@@ -2,7 +2,7 @@
 #include <vector>
 #include <cmath>
 
-#include "InstanceFormations.h"
+#include "instance-formations.h"
 #include "Interface.h"
 
 using namespace std;
