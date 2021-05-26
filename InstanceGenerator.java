@@ -21,28 +21,29 @@ public class InstanceGenerator {
 //    public static int NBR_APPRENANTS = 20;
 //    public static int NBR_FORMATIONS_PAR_SEMAINE = 4; // max 10 demi-journées par apprenant
 
-    public static int NBR_APPRENANTS = 5*4;
-    public static int NBR_FORMATIONS_PAR_SEMAINE = 2;
-
-    public static int NBR_CENTRES_FORMATION = 3; 
+    public static int NBR_APPRENANTS = 5*4;	
+    public static int NBR_FORMATIONS_PAR_SEMAINE = 1;
 
     public static int DIMENSION_ZONE_GEOGRAPHIQUE = 200;
 
-    public static int NBR_INTERFACES = (int) (NBR_APPRENANTS * 1.2);
+    public static int NBR_INTERFACES = (int) (NBR_APPRENANTS/4 * 1.2);
     public static int NBR_FORMATIONS = NBR_APPRENANTS * NBR_FORMATIONS_PAR_SEMAINE;
 
-    public static String FILENAME = "instance-formations.h";
+    public static String FILENAME = "instance-" + NBR_FORMATIONS + "formations.c";
 
     public static int NBR_COMPETENCES = 2;
     public static String NOMS_COMPETENCES[] = {
         "COMPETENCE_SIGNES",
         "COMPETENCE_CODAGE"};
 
-    public static int NBR_SPECIALITES = 3;
+    public static int NBR_CENTRES_FORMATION = 5; 
+    public static int NBR_SPECIALITES = NBR_CENTRES_FORMATION;
     public static String NOMS_SPECIALITES[] = {
         "SPECIALITE_MENUISERIE",
         "SPECIALITE_ELECTRICITE",
-        "SPECIALITE_MECANIQUE"};
+        "SPECIALITE_MECANIQUE",
+        "SPECIALITE_INFORMATIQUE",
+        "SPECIALITE_CUISINE"};
 
     public static String JOURS_SEMAINE[] = {
         "LUNDI",
@@ -74,7 +75,6 @@ public class InstanceGenerator {
         }
     }
 
-    //#include <stdio.h>
     //
     //#define NBR_INTERFACES        10 
     //#define NBR_APPRENANTS	       8 
@@ -87,13 +87,12 @@ public class InstanceGenerator {
     //#define COMPETENCE_CODAGE      1 
     private void writeHeader() {
         try {
-            textFileOutput.write("                  \n");
             textFileOutput.write("#define NBR_INTERFACES        " + NBR_INTERFACES + "\n");
             textFileOutput.write("#define NBR_APPRENANTS        " + NBR_APPRENANTS + "\n");
             textFileOutput.write("#define NBR_FORMATIONS        " + NBR_FORMATIONS + "\n");
             textFileOutput.write("#define NBR_CENTRES_FORMATION " + NBR_CENTRES_FORMATION + "\n");
             textFileOutput.write("#define NBR_SPECIALITES       " + NBR_SPECIALITES + "\n");
-            textFileOutput.write("#define NBR_NODES 	      NBR_CENTRES_FORMATION + NBR_INTERFACES + NBR_APPRENANTS\n");
+            textFileOutput.write("#define NBR_NODES 	      NBR_CENTRES_FORMATION+NBR_INTERFACES+NBR_APPRENANTS\n");
             textFileOutput.write("                  \n");
             textFileOutput.write("/* code des compétence en langage des signes et en codage LPC */\n");
             textFileOutput.write("#define COMPETENCE_SIGNES     0\n");
@@ -128,7 +127,7 @@ public class InstanceGenerator {
             for (int i = 0; i < maxi; i++) {
 		double f = rand.nextDouble() ;
                 if (f < 0.1) {
-                    textFileOutput.write("    {1,0}");
+                    textFileOutput.write("    {1,1}");
                 } else if (f < 0.55) {
                     textFileOutput.write("    {1,0}");
                 } else {
@@ -170,9 +169,9 @@ public class InstanceGenerator {
         try {
             textFileOutput.write("/* spécialités des interfaces */\n");
             textFileOutput.write("#define SPECIALITE_SANS       -1 /* Enseigné dans le centre le plus proche */\n");
-            textFileOutput.write("#define SPECIALITE_MENUISERIE  0 \n");
-            textFileOutput.write("#define SPECIALITE_ELECTRICITE 1\n");
-            textFileOutput.write("#define SPECIALITE_MECANIQUE   2\n");
+            for (int i=0;i<NOMS_SPECIALITES.length;i++) {
+                textFileOutput.write("#define "+NOMS_SPECIALITES[i]+" "+i+"\n");
+            }
             textFileOutput.write("                  \n");
 
             textFileOutput.write("/* specialite des interfaces */\n");
@@ -360,8 +359,7 @@ public class InstanceGenerator {
 
     private void writeMain() {
         try {
-            textFileOutput.write("\n//EOF\n");
-
+            textFileOutput.write("// EOF\n");
         } catch (IOException ex) {
             Logger.getLogger(InstanceGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
