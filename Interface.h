@@ -14,6 +14,7 @@ public:
     int *speciality;   // list of the interface's specialty (max 3)
     list<int> assigned_apprentice;   // list of apprentices ids
     list< map<int, string> > time_table;
+    // map < int, list<int> >
     int distance;   // distance travelled by the Interface
 
     Interface(): assigned_apprentice(), time_table(), distance(0){
