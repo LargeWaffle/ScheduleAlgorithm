@@ -73,7 +73,7 @@ float coord[NBR_NODES][2]={
     {20,27}/* apprenant 19 */
 };
                   
-#define NBR_FORMATION          20
+#define NBR_FORMATIONS          20
                   
 #define LUNDI                  1
 #define MARDI                  2
@@ -83,7 +83,7 @@ float coord[NBR_NODES][2]={
 #define SAMEDI                 6
                   
 /* formation : id formation, specialite ou centre de formation, competence, horaire debut formation, horaire fin formation */
-int formation[NBR_FORMATION][6]={
+int formation[NBR_FORMATIONS][6]={
    {0,SPECIALITE_MECANIQUE,COMPETENCE_SIGNES,JEUDI,8,11},
    {1,SPECIALITE_INFORMATIQUE,COMPETENCE_SIGNES,MERCREDI,10,12},
    {2,SPECIALITE_MENUISERIE,COMPETENCE_SIGNES,MARDI,8,11},

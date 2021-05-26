@@ -8,28 +8,27 @@ using namespace std;
 
 float evaluatePopulation(Interface (&population)[NBR_INTERFACES])
 {
-    float score, travelDistance = 0;
-    //int hq[2] = coord[0];
-    int penalty = 3;//get total number of specialties non fufilled
+    int penalty = 3;    //get total number of specialties non fufilled
 
-    for (auto & Individu : population) {
+    float travelDistance = 0;
+    float variance, ecart_type, meandistance, correlation;      // facteur de correlation (cf. pdf)
+
+    for (auto & indiv : population) {
         travelDistance = 0;
-
-        for (int i = 0; i < NBR_INTERFACES; i++) {
-
-        }
+        travelDistance += indiv.distance;
     }
 
-    float meandistance;
-    float variance = NBR_INTERFACES / (NBR_INTERFACES- meandistance * meandistance);
-    float ecart_type = sqrt(variance);
+    meandistance = travelDistance / NBR_INTERFACES;
+    correlation = travelDistance / NBR_FORMATIONS;
+    variance = NBR_INTERFACES / (NBR_INTERFACES- meandistance * meandistance);
+    ecart_type = sqrt(variance);
 
-    score = (float)(0.5 * penalty);
-    return score;
+    return (float)(0.5 * (meandistance + ecart_type) + 0.5 * correlation * penalty);
 }
 
 void fillPopulation(Interface (&population)[NBR_INTERFACES])
 {
+
     int indiv_index = 0;
     for(auto & indiv : population)
     {
@@ -53,12 +52,13 @@ bool hasSameCompetence(int index_formation, int index_interface)
     return result;
 }
 
-bool isFree(int index_interface, int index_formation, Interface population[])
+bool isFree(int index_interface, int index_formation, Interface (&population)[NBR_INTERFACES])
 {
 // TODO:finish when time table is clear in my head
+
 }
 
-void greedyFirstSolution(Interface population[])
+void greedyFirstSolution(Interface (&population)[NBR_INTERFACES])
 {
     for (int i = 0; i < NBR_FORMATIONS; i++)
     {
@@ -83,8 +83,13 @@ void greedyFirstSolution(Interface population[])
 
         }
     }
-
+    float hq[2]{coord[0][0], coord[0][1]};  // Coordonnées du QG
+    /*TODO: ajouter la distance parcourue quand une formation est rentré.
+     * Needed pour les fonctions évaluation et fitness
+    */
 }
+
+// La notation Interface (&population)[NBR_INTERFACES] permet de passer par réference
 
 int main()
 {
@@ -98,7 +103,7 @@ int main()
 
     fillPopulation(starting_population);    // Remplir la solution initiale starting_population
     greedyFirstSolution(starting_population);
-    //float eval = evaluatePopulation(starting_population);
+    float eval = evaluatePopulation(starting_population);
 
     return 0;
 }

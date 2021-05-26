@@ -13,7 +13,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Olivier Grunder
  */
 public class InstanceGenerator {
@@ -92,7 +91,7 @@ public class InstanceGenerator {
             textFileOutput.write("#define NBR_FORMATIONS        " + NBR_FORMATIONS + "\n");
             textFileOutput.write("#define NBR_CENTRES_FORMATION " + NBR_CENTRES_FORMATION + "\n");
             textFileOutput.write("#define NBR_SPECIALITES       " + NBR_SPECIALITES + "\n");
-            textFileOutput.write("#define NBR_NODES 	      NBR_CENTRES_FORMATION+NBR_INTERFACES+NBR_APPRENANTS\n");
+            textFileOutput.write("#define NBR_NODES 	      NBR_CENTRES_FORMATION + NBR_INTERFACES + NBR_APPRENANTS\n");
             textFileOutput.write("                  \n");
             textFileOutput.write("/* code des compétence en langage des signes et en codage LPC */\n");
             textFileOutput.write("#define COMPETENCE_SIGNES     0\n");
@@ -308,7 +307,7 @@ public class InstanceGenerator {
     //} ;
     private void writeFormation() {
         try {
-            textFileOutput.write("#define NBR_FORMATION          " + NBR_FORMATIONS + "\n");
+            textFileOutput.write("#define NBR_FORMATIONS          " + NBR_FORMATIONS + "\n");
             textFileOutput.write("                  \n");
             textFileOutput.write("#define LUNDI                  1\n");
             textFileOutput.write("#define MARDI                  2\n");
@@ -320,7 +319,7 @@ public class InstanceGenerator {
 
             textFileOutput.write("/* formation : id formation, specialite ou centre de formation, competence, horaire debut formation, horaire fin formation */\n");
 
-            textFileOutput.write("int formation[NBR_FORMATION][6]={\n");
+            textFileOutput.write("int formation[NBR_FORMATIONS][6]={\n");
 
             int maxi = NBR_APPRENANTS;
             // public static int NBR_FORMATIONS = NBR_APPRENANTS * NBR_FORMATIONS_PAR_SEMAINE;
