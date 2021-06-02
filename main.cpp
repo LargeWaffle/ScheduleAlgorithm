@@ -5,15 +5,24 @@
 
 using namespace std;
 
+int getPenalty(const Interface* individu)
+{
+    int nbPenalty = 0;
+
+    // Formation struct ?
+
+
+    return nbPenalty;
+}
 float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
 {
-    int penalty = 3;    //get total number of specialties non fufilled
+    int penalty;    //get total number of specialties non fufilled
 
     float travelDistance = 0;
     float variance, ecart_type, meandistance, correlation;      // facteur de correlation (cf. pdf)
 
     for (auto & indiv : population) {
-        travelDistance = 0;
+        penalty = getPenalty(indiv);
         travelDistance += indiv->distance;
     }
 
@@ -131,9 +140,7 @@ int main()
     float eval = evaluatePopulation(starting_population);
 
     for(Interface *i : starting_population)
-    {
         i->display();
-    }
 
     return 0;
 }
