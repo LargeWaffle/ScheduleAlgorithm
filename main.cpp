@@ -26,20 +26,15 @@ int getPenalty(const Interface* individu)
     return nbPenalty;
 }
 
-float evaluateIndividu(Interface * individu)
-{
-    return 0.5;
-}
-
 float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
 {
-    int penalty;    //get total number of specialties non fufilled
+    int nbPenalty = 0;    //get total number of specialties non fufilled
 
     float travelDistance = 0, valVariance = 0;
     float variance, ecart_type, meandistance, correlation;      // facteur de correlation (cf. pdf)
 
     for (auto & indiv : population) {
-        penalty = getPenalty(indiv);
+        nbPenalty += getPenalty(indiv);
         travelDistance += indiv->distance;
         valVariance += indiv->distance * indiv->distance;
     }
@@ -49,12 +44,12 @@ float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
 
     if (NBR_INTERFACES == meandistance * meandistance)
         throw "Division by zero dumb dumb!";
-
-    variance = valVariance / (NBR_INTERFACES- meandistance * meandistance);
+    else
+        variance = valVariance / (NBR_INTERFACES- meandistance * meandistance);
 
     ecart_type = sqrt(variance);
 
-    return (float)(0.5 * (meandistance + ecart_type) + 0.5 * correlation * penalty);
+    return (float)(0.5 * (meandistance + ecart_type) + 0.5 * correlation * nbPenalty);
 }
 
 void fillPopulation(Interface *(&population)[NBR_INTERFACES])
@@ -93,7 +88,8 @@ bool getPartOfDayFormation(int indexFormation)
 
 bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES])
 {
-
+    population[indexInterface]->displayTimeTable();
+    cout << indexFormation << endl;
     bool partOfDay = getPartOfDayFormation(indexFormation); //true if morning false otherwise
     int startingHour = formation[indexFormation][4];
     int endingHour = formation[indexFormation][5];
@@ -102,13 +98,28 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
 
     if (population[indexInterface]->assigned_missions.size() > 0)
     {
+        cout << "hello";
         for(const auto& value: population[indexInterface]->assigned_missions)
         {
             cout << value << endl;
             for(int k = startingPoint; k < startingPoint+2; k++)
             {
-                if(population[indexInterface]->time_table[value][k] != -1 && population[indexInterface]->time_table[value][k+1] != -1)
+                cout << "hello";
+                if(indexInterface == 7)
                 {
+                    cout << k, startingPoint;
+                    cout << "" <<endl;
+                    cout << population[indexInterface]->time_table[value][k], population[indexInterface]->time_table[value][k+1];
+
+                }
+                cout << "coucou";
+                for (int i: population[indexFormation]->time_table[value])
+                    std::cout << i << ' ';
+                cout << "bjr";
+
+                if((population[indexFormation]->time_table[value][k] != -1) && (population[indexFormation]->time_table[value][k+1] != -1))
+                {
+                    cout << "not -1" << endl;
                     if (startingHour > population[indexInterface]->time_table[value][k] && startingHour < population[indexInterface]->time_table[value][k+1])
                     {
                         cout << "not available";
@@ -144,7 +155,6 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                     bool partOfDay = getPartOfDayFormation(indexFormation); //true if morning false otherwise
 
                     vector<int> timeTableInterface = population[indexInterface]->time_table[day];
-
                     int startingPoint = partOfDay ? 0 : int(timeTableInterface.size() / 2);
 
                     for (int k = startingPoint; k < startingPoint+4; k++)
@@ -153,17 +163,21 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                         {
                             population[indexInterface]->time_table[day][k] = formation[indexFormation][4]; //starting hour
                             population[indexInterface]->time_table[day][k+1] = formation[indexFormation][5]; //finishing hour
+                            population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
                             break;
                         }
                         else
                         {
+                            cout << "there" << endl;
                             population[indexInterface]->time_table[day][k+2] = formation[indexFormation][4]; //starting hour
                             population[indexInterface]->time_table[day][k+3] = formation[indexFormation][5]; //finishing hour
+                            population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
                             break;
                         }
                     }
                 }
             }
+            population[0]->displayTimeTable();
         }
     }
     float hq[2] = {coord[0][0], coord[0][1]};  // Coordonnées du QG
@@ -190,10 +204,10 @@ int main()
     float eval = evaluatePopulation(starting_population);
 
     cout << "Eval is " << eval << endl;
-
+    /*
     for(Interface *i : starting_population)
         i->displayTimeTable();
-
+    */
     return 0;
 }
 

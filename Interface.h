@@ -12,7 +12,8 @@ class Interface{
 
 public:
 
-    float distance;   // distance travelled by the Interface
+    float distance;     // distance travelled by the Interface
+    float fitness;      // fitness value for genetic selection
     int *competence;   // sign and/or LPC
     int *speciality;   // list of the interface's specialty (max 3)
 
@@ -91,6 +92,13 @@ public:
         }
 
         cout << endl;
+    }
+
+    float evaluateIndividu(Interface * individu)
+    {
+        //TODO: To reconsider if values are weird
+
+        //return 0.7 * + 0.3 * 1/ abs();
     }
 };
 
