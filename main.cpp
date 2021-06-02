@@ -1,7 +1,5 @@
 #include <iostream>
 #include <cmath>
-#include <list>
-#include <iterator>
 #include "instance-formations.h"
 #include "Interface.h"
 
@@ -81,12 +79,14 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                 //cout << "memes competences" << endl;
                 if (isFree(indexInterface, indexFormation, population))
                 {
+
                     int day = getDayFormation(indexFormation);
                     bool partOfDay = getPartOfDayFormation(indexFormation); //true if morning false otherwise
+
                     vector<int> timeTableInterface = population[indexInterface]->time_table[day];
 
-                    int startingPoint;
-                    partOfDay ? startingPoint = 0 : startingPoint = int(timeTableInterface.size() / 2);
+                    int startingPoint = partOfDay ? 0 : int(timeTableInterface.size() / 2);;
+
                     for (int k = startingPoint; k < startingPoint+4; k++)
                     {
                         if (population[indexInterface]->time_table[day][k] == -1)
@@ -101,6 +101,8 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                             population[indexInterface]->time_table[day][k+3] = formation[indexFormation][5]; //finishing hour
                             break;
                         }
+                        //TODO: SI BREAK SE FAIT DANS LE IF ET LE ELSE METS LE ICI A LA PLACE
+                        //SINON LA BOUCLE FOR TOURNE JAMAIS
                     }
                 }
             }
@@ -111,8 +113,6 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
      * Needed pour les fonctions évaluation et fitness
     */
 }
-
-// La notation Interface (&population)[NBR_INTERFACES] permet de passer par réference
 
 int main()
 {
@@ -125,7 +125,9 @@ int main()
     Interface *starting_population[NBR_INTERFACES];
 
     fillPopulation(starting_population);    // Remplir la solution initiale starting_population
+
     greedyFirstSolution(starting_population);
+
     float eval = evaluatePopulation(starting_population);
 
     for(Interface *i : starting_population)

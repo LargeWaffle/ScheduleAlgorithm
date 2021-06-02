@@ -36,19 +36,24 @@ public:
     }
 
     void display(){
+        cout << "___ Interface ___ " << endl;
         displayInterface();
+        cout << "\nTimetable" << endl;
         displayTimeTable();
+        cout << "_________________ " << endl << endl;
     }
 
     void displayInterface(){
 
-        cout << "___ Interface ___ " << endl;
+        cout << "Competences ";
+        cout << "[" << competence[0] << ", " << competence[1] << "]" << endl;
 
-        cout << "Competences" << endl;
-        cout << "[ " << competence[0] << ", " << competence[1] << " ]" << endl;
+        cout << "Speciality ";
 
-        cout << "Speciality" << endl;
-        cout << "[ " << speciality[0] << ", " << speciality[1] << " ," << speciality[2] << " ]" << endl;
+        cout << "[" << speciality[0];
+        for(int i = 1; i < 5; i++)
+            cout << ", " << speciality[i];
+        cout << "]" << endl << endl;
 
         if(!assigned_apprentice.empty())
         {
@@ -65,7 +70,6 @@ public:
             cout << "Interface has no one to work with !" << endl;
 
         cout << "and he travelled " << distance << " kms" << endl;
-        cout << "___ End of display ___" << endl;
     }
 
     void displayTimeTable(){
@@ -80,7 +84,7 @@ public:
             cout << day << " : ";
             for(const int& hour : schedule)
             {
-                cout << " | " << hour;
+                cout << hour << " | ";
             }
 
             cout << endl;
@@ -88,7 +92,6 @@ public:
 
         cout << endl;
     }
-
 };
 
 #endif //SCHEDULEALGORITHM_INTERFACE_H
