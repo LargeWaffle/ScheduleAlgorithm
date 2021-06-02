@@ -16,14 +16,14 @@ public:
     int *competence;   // sign and/or LPC
     int *speciality;   // list of the interface's specialty (max 3)
 
-    vector<int> assigned_apprentice;   // list of apprentices ids
+    vector<int> assigned_missions;   // list of missions ids
 
     map < int, vector<int> > time_table; //<jour, liste d'horaires>
 
-    Interface(): assigned_apprentice(), distance(0){
+    Interface(): assigned_missions(), distance(0){
 
         competence = new int[2];
-        speciality = new int[5];
+        speciality = new int[NBR_SPECIALITES];
 
         for(int i = 1; i < 7; i++)
             time_table.insert(pair<int, vector<int>>(i ,{-1, -1, -1, -1, -1, -1, -1, -1}));
@@ -51,18 +51,18 @@ public:
         cout << "Speciality ";
 
         cout << "[" << speciality[0];
-        for(int i = 1; i < 5; i++)
+        for(int i = 1; i < NBR_SPECIALITES; i++)
             cout << ", " << speciality[i];
         cout << "]" << endl << endl;
 
-        if(!assigned_apprentice.empty())
+        if(!assigned_missions.empty())
         {
             // Display list of assigned apprentice
 
             cout << "List of apprentices" << endl;
 
             cout << "IDs =  { ";
-            for (int elem : assigned_apprentice)
+            for (int elem : assigned_missions)
                 cout << elem << ", ";
             cout << " };\n";
         }
