@@ -94,11 +94,32 @@ public:
         cout << endl;
     }
 
-    float evaluateIndividu(Interface * individu)
+    int getPenalty()
+    {
+        int nbPenalty = 0;
+
+        for(int i = 0; i < assigned_missions.size(); i++){
+
+            int index = assigned_missions[i];
+
+            for (int j = 0; j < NBR_SPECIALITES; j++)
+
+                if(speciality[j] == 1)
+
+                    if(j == formation[index][1])
+                        nbPenalty++;
+
+        }
+
+        return nbPenalty;
+    }
+
+    float evaluateIndividu(float meandistance)
     {
         //TODO: To reconsider if values are weird
 
-        //return 0.7 * + 0.3 * 1/ abs();
+        int nbSpeciality = (int)assigned_missions.size() - getPenalty();
+        return 0.7 * nbSpeciality + 0.3 * 1/ abs(meandistance - distance);
     }
 };
 

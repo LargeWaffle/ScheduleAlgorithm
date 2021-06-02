@@ -5,27 +5,6 @@
 
 using namespace std;
 
-int getPenalty(const Interface* individu)
-{
-    int nbPenalty = 0;
-
-    for(int i = 0; i < individu->assigned_missions.size(); i++){
-
-        int index = individu->assigned_missions[i];
-
-        for (int j = 0; j < NBR_SPECIALITES; j++)
-
-            if(individu->speciality[j] == 1)
-
-                if(j == formation[index][1])
-                    nbPenalty++;
-
-    }
-
-
-    return nbPenalty;
-}
-
 float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
 {
     int nbPenalty = 0;    //get total number of specialties non fufilled
@@ -34,7 +13,7 @@ float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
     float variance, ecart_type, meandistance, correlation;      // facteur de correlation (cf. pdf)
 
     for (auto & indiv : population) {
-        nbPenalty += getPenalty(indiv);
+        nbPenalty += indiv->getPenalty();
         travelDistance += indiv->distance;
         valVariance += indiv->distance * indiv->distance;
     }
