@@ -7,7 +7,7 @@
 
 using namespace std;
 
-float evaluatePopulation(Interface (&population)[NBR_INTERFACES])
+float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
 {
     int penalty = 3;    //get total number of specialties non fufilled
 
@@ -16,7 +16,7 @@ float evaluatePopulation(Interface (&population)[NBR_INTERFACES])
 
     for (auto & indiv : population) {
         travelDistance = 0;
-        travelDistance += indiv.distance;
+        travelDistance += indiv->distance;
     }
 
     meandistance = travelDistance / NBR_INTERFACES;
@@ -27,14 +27,14 @@ float evaluatePopulation(Interface (&population)[NBR_INTERFACES])
     return (float)(0.5 * (meandistance + ecart_type) + 0.5 * correlation * penalty);
 }
 
-void fillPopulation(Interface (&population)[NBR_INTERFACES])
+void fillPopulation(Interface *(&population)[NBR_INTERFACES])
 {
     for(int i = 0; i < NBR_INTERFACES; i++)
     {
-        Interface intervenant = Interface();
+        auto *intervenant = new Interface();
 
-        intervenant.competence = competences_interfaces[i];
-        intervenant.speciality = specialite_interfaces[i];
+        intervenant->competence = competences_interfaces[i];
+        intervenant->speciality = specialite_interfaces[i];
 
         population[i] = intervenant;
     }
@@ -53,7 +53,7 @@ bool hasSameCompetence(int indexFormation, int indexInterface)
     return result;
 }
 
-bool isFree(int index_interface, int index_formation, Interface (&population)[NBR_INTERFACES])
+bool isFree(int index_interface, int index_formation, Interface *(&population)[NBR_INTERFACES])
 {
 // TODO:finish when time table is clear in my head
     return true;
@@ -64,7 +64,13 @@ int getDayFormation(int indexFormation)
     return formation[indexFormation][3];
 }
 
-void greedyFirstSolution(Interface (&population)[NBR_INTERFACES])
+bool getPartOfDayFormation(int indexFormation)
+{
+    return formation[indexFormation][4] <= 12;
+}
+
+
+void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 {
     for (int indexFormation = 0; indexFormation < NBR_FORMATIONS; indexFormation++)
     {
@@ -75,37 +81,29 @@ void greedyFirstSolution(Interface (&population)[NBR_INTERFACES])
                 //cout << "memes competences" << endl;
                 if (isFree(indexInterface, indexFormation, population))
                 {
-
                     int day = getDayFormation(indexFormation);
-                    //cout << day << endl;
-                    
-                    vector<int> test = population[indexInterface].time_table[day];
+                    bool partOfDay = getPartOfDayFormation(indexFormation); //true if morning false otherwise
+                    vector<int> timeTableInterface = population[indexInterface]->time_table[day];
 
-                    test[0];
-
-                    test[4] = 23;
-                    for (auto const &i: test) {
-                        std::cout << i;
+                    int startingPoint;
+                    partOfDay ? startingPoint = 0 : startingPoint = int(timeTableInterface.size() / 2);
+                    for (int k = startingPoint; k < startingPoint+4; k++)
+                    {
+                        if (population[indexInterface]->time_table[day][k] == -1)
+                        {
+                            population[indexInterface]->time_table[day][k] = formation[indexFormation][4]; //starting hour
+                            population[indexInterface]->time_table[day][k+1] = formation[indexFormation][5]; //finishing hour
+                            break;
+                        }
+                        else
+                        {
+                            population[indexInterface]->time_table[day][k+2] = formation[indexFormation][4]; //starting hour
+                            population[indexInterface]->time_table[day][k+3] = formation[indexFormation][5]; //finishing hour
+                            break;
+                        }
                     }
-                    cout << endl;
-                    vector<int> test2 = population[indexInterface].time_table[day];
-                    for (auto const &i: test2) {
-                        std::cout << i;
-                    }
-
-                    cout << endl;
-                    //cout << "interface disponible" << endl;
-                }
-                else
-                {
-                    //cout << "interface pas disponible" << endl;
                 }
             }
-            else
-            {
-                //cout << "pas memes competences" << endl;
-            }
-
         }
     }
     float hq[2]{coord[0][0], coord[0][1]};  // Coordonnées du QG
@@ -124,11 +122,16 @@ int main()
     cout << "\tNumber of Apprentices = " << NBR_APPRENANTS << endl;
     cout << "\tNumber of nodes = " << NBR_NODES << endl << endl;
 
-    Interface starting_population[NBR_INTERFACES];
+    Interface *starting_population[NBR_INTERFACES];
 
     fillPopulation(starting_population);    // Remplir la solution initiale starting_population
     greedyFirstSolution(starting_population);
     float eval = evaluatePopulation(starting_population);
+
+    for(Interface *i : starting_population)
+    {
+        i->display();
+    }
 
     return 0;
 }

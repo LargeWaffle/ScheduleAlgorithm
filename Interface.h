@@ -23,7 +23,7 @@ public:
     Interface(): assigned_apprentice(), distance(0){
 
         competence = new int[2];
-        speciality = new int[3];
+        speciality = new int[5];
 
         for(int i = 1; i < 7; i++)
             time_table.insert(pair<int, vector<int>>(i ,{-1, -1, -1, -1, -1, -1, -1, -1}));
