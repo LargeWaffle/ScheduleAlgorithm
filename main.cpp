@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
-
+#include <list>
+#include <iterator>
 #include "instance-formations.h"
 #include "Interface.h"
 
@@ -28,26 +29,26 @@ float evaluatePopulation(Interface (&population)[NBR_INTERFACES])
 
 void fillPopulation(Interface (&population)[NBR_INTERFACES])
 {
-
-    int indiv_index = 0;
-    for(auto & indiv : population)
+    for(int i = 0; i < NBR_INTERFACES; i++)
     {
-        indiv.competence = competences_interfaces[indiv_index];
-        indiv.speciality = specialite_interfaces[indiv_index];
+        Interface intervenant = Interface();
 
-        indiv_index++;
+        intervenant.competence = competences_interfaces[i];
+        intervenant.speciality = specialite_interfaces[i];
+
+        population[i] = intervenant;
     }
 }
 
-bool hasSameCompetence(int index_formation, int index_interface)
+bool hasSameCompetence(int indexFormation, int indexInterface)
 {
-    int comp_form = formation[index_formation][2];
+    int comp_form = formation[indexFormation][2];
     bool result = false;
 
     if (comp_form == 0) // competence formation : signe
-        result = (competences_interfaces[index_interface][0] == 1);
+        result = (competences_interfaces[indexInterface][0] == 1);
     else // competence formation : codage LPC
-        result = (competences_interfaces[index_interface][1] == 1);
+        result = (competences_interfaces[indexInterface][1] == 1);
 
     return result;
 }
@@ -55,36 +56,60 @@ bool hasSameCompetence(int index_formation, int index_interface)
 bool isFree(int index_interface, int index_formation, Interface (&population)[NBR_INTERFACES])
 {
 // TODO:finish when time table is clear in my head
+    return true;
+}
 
+int getDayFormation(int indexFormation)
+{
+    return formation[indexFormation][3];
 }
 
 void greedyFirstSolution(Interface (&population)[NBR_INTERFACES])
 {
-    for (int i = 0; i < NBR_FORMATIONS; i++)
+    for (int indexFormation = 0; indexFormation < NBR_FORMATIONS; indexFormation++)
     {
-        for (int j = 0; j < NBR_INTERFACES; j++)
+        for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
         {
-            if (hasSameCompetence(i, j) == 1)
+            if (hasSameCompetence(indexFormation, indexInterface) == 1)
             {
-                cout << "memes competences" << endl;
-                if (isFree(j, i, population))
+                //cout << "memes competences" << endl;
+                if (isFree(indexInterface, indexFormation, population))
                 {
-                    cout << "interface disponible" << endl;
+
+                    int day = getDayFormation(indexFormation);
+                    //cout << day << endl;
+                    
+                    vector<int> test = population[indexInterface].time_table[day];
+
+                    test[0];
+
+                    test[4] = 23;
+                    for (auto const &i: test) {
+                        std::cout << i;
+                    }
+                    cout << endl;
+                    vector<int> test2 = population[indexInterface].time_table[day];
+                    for (auto const &i: test2) {
+                        std::cout << i;
+                    }
+
+                    cout << endl;
+                    //cout << "interface disponible" << endl;
                 }
                 else
                 {
-                    cout << "interface pas disponible" << endl;
+                    //cout << "interface pas disponible" << endl;
                 }
             }
             else
             {
-                cout << "pas memes competences" << endl;
+                //cout << "pas memes competences" << endl;
             }
 
         }
     }
     float hq[2]{coord[0][0], coord[0][1]};  // Coordonnées du QG
-    /*TODO: ajouter la distance parcourue quand une formation est rentré.
+    /*TODO: ajouter la distance parcourue quand une formation est rentrée.
      * Needed pour les fonctions évaluation et fitness
     */
 }

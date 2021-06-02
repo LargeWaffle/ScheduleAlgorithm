@@ -2,8 +2,9 @@
 #define SCHEDULEALGORITHM_INTERFACE_H
 
 #include <string>
-#include <list>
+#include <vector>
 #include <map>
+#include <algorithm>
 
 using namespace std;
 
@@ -15,21 +16,28 @@ public:
     int *competence;   // sign and/or LPC
     int *speciality;   // list of the interface's specialty (max 3)
 
-    list<int> assigned_apprentice;   // list of apprentices ids
+    vector<int> assigned_apprentice;   // list of apprentices ids
 
-    list< map<int, string> > time_table;
-    // map < int, list<int> >
+    map < int, vector<int> > time_table; //<jour, liste d'horaires>
 
-    Interface(): assigned_apprentice(), time_table(), distance(0){
+    Interface(): assigned_apprentice(), distance(0){
 
         competence = new int[2];
         speciality = new int[3];
+
+        for(int i = 1; i < 7; i++)
+            time_table.insert(pair<int, vector<int>>(i ,{-1, -1, -1, -1, -1, -1, -1, -1}));
     }
 
     ~Interface(){
 
         delete [] competence;
         delete [] speciality;
+    }
+
+    void display(){
+        displayInterface();
+        displayTimeTable();
     }
 
     void displayInterface(){
@@ -62,7 +70,25 @@ public:
 
     void displayTimeTable(){
 
+        auto it = time_table.begin();
+
+        for (pair<int, vector<int>> element : time_table) {
+
+            int day = element.first;        // Accessing KEY from element
+            vector<int> schedule = element.second;        // Accessing VALUE from element.
+
+            cout << day << " : ";
+            for(const int& hour : schedule)
+            {
+                cout << " | " << hour;
+            }
+
+            cout << endl;
+        }
+
+        cout << endl;
     }
+
 };
 
 #endif //SCHEDULEALGORITHM_INTERFACE_H
