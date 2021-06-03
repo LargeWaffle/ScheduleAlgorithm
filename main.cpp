@@ -83,9 +83,9 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
     int endingHour = formation[indexFormation][5];
     //cout << "startingHour : " << startingHour << " endingHour : " << endingHour << endl;
     //if (partOfDay == 1)
-        //cout << "morning" << endl;
+    //    cout << "morning" << endl;
     //else
-        //cout << "evening" << endl;
+    //    cout << "evening" << endl;
     bool available = false;
 
     if (!population[indexInterface]->assigned_missions.empty()) //if interface already has at least 1 mission assigned
@@ -99,12 +99,17 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
                 if((population[indexInterface]->time_table[day][k] != -1) && (population[indexInterface]->time_table[day][k+1] != -1))
                 {
                     //cout << "not -1" << endl;
-                    if (((startingHour >= population[indexInterface]->time_table[value][k]) && (startingHour <= population[indexInterface]->time_table[value][k+1]))
+                    //cout << "index interface : " << indexInterface << " | value : " << value << " | k : " << k << endl;
+                    if (((startingHour >= population[indexInterface]->time_table[day][k]) && (startingHour <= population[indexInterface]->time_table[day][k+1]))
                     ||
-                            (endingHour >= population[indexInterface]->time_table[value][k]) && (endingHour <= population[indexInterface]->time_table[value][k+1])
+                            (endingHour >= population[indexInterface]->time_table[day][k]) && (endingHour <= population[indexInterface]->time_table[day][k+1])
                     )
                     {
                         //cout << "not available";
+                    }
+                    else
+                    {
+                        available = true;
                     }
                 }
                 else
@@ -130,6 +135,7 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
         {
             if (hasSameCompetence(indexFormation, indexInterface) == 1)
             {
+                //cout << "bonnes competences" << endl;
                 int day = getDayFormation(indexFormation); //get day of curr formation
                 bool partOfDay = getPartOfDayFormation(indexFormation); //1 if morning 0 otherwise
                 int startingPoint = partOfDay ? 0 : int(population[indexInterface]->time_table[day].size() / 2);
@@ -155,6 +161,7 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                             break;
                         }
                     }
+                    break;
                 }
                 else
                 {
@@ -191,7 +198,6 @@ int main()
     float eval = evaluatePopulation(starting_population);
 
     cout << "Eval is " << eval << endl;
-
     for(Interface *i : starting_population)
         i->display();
 
