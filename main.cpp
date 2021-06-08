@@ -2,6 +2,7 @@
 #include <cmath>
 #include "instance-formations.h"
 #include "Interface.h"
+#include <cmath>
 
 using namespace std;
 
@@ -77,6 +78,25 @@ bool getPartOfDayFormation(int indexFormation)
     return formation[indexFormation][4] <= 12;
 }
 
+vector<float> getFormationPosition(int indexFormation)
+{
+    if (formation[indexFormation][1] == SPECIALITE_MENUISERIE)
+    {
+        cout << "menuiserie " << coord[1][0] << " " <<  coord[1][1] << endl;
+        return {coord[1][0], coord[1][1]};
+    }
+    else if (formation[indexFormation][1] == SPECIALITE_ELECTRICITE)
+    {
+        cout << "electricte " << coord[2][0] << " " <<  coord[2][1] << endl;
+        return {coord[2][0], coord[2][1]};
+    }
+    else
+    {
+        cout << "autre " << coord[3][0] << " " <<  coord[3][1] << endl;
+        return {coord[3][0], coord[3][1]};
+    }
+}
+
 bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES], int day, bool partOfDay, int startingPoint)
 {
     int startingHour = formation[indexFormation][4];
@@ -90,32 +110,15 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
 
     if (!population[indexInterface]->assigned_missions.empty()) //if interface already has at least 1 mission assigned
     {
-        //cout << "assigned missions > 0" << endl;
-        for(const auto& value: population[indexInterface]->assigned_missions)
+        if ((population[indexInterface]->time_table[day][startingPoint] == -1) && (population[indexInterface]->time_table[day][startingPoint+2] == -1))
         {
-            //cout << "index of assigned missions : " << value << endl;
-            for(int k = startingPoint; k < startingPoint+2; k+=2)
+            available = true;
+        }
+        else if((population[indexInterface]->time_table[day][startingPoint] == -1) && (population[indexInterface]->time_table[day][startingPoint+2] != -1))
+        {
+            if(!((startingHour <= population[indexInterface]->time_table[day][startingPoint+2]) && (endingHour <= population[indexInterface]->time_table[day][startingPoint+3])))
             {
-                if((population[indexInterface]->time_table[day][k] != -1) && (population[indexInterface]->time_table[day][k+1] != -1))
-                {
-                    //cout << "not -1" << endl;
-                    //cout << "index interface : " << indexInterface << " | value : " << value << " | k : " << k << endl;
-                    if (((startingHour >= population[indexInterface]->time_table[day][k]) && (startingHour <= population[indexInterface]->time_table[day][k+1]))
-                    ||
-                            (endingHour >= population[indexInterface]->time_table[day][k]) && (endingHour <= population[indexInterface]->time_table[day][k+1])
-                    )
-                    {
-                        //cout << "not available";
-                    }
-                    else
-                    {
-                        available = true;
-                    }
-                }
-                else
-                {
-                    available = true;
-                }
+                available = true;
             }
         }
     }
@@ -151,6 +154,20 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                             population[indexInterface]->time_table[day][k] = formation[indexFormation][4]; //starting hour
                             population[indexInterface]->time_table[day][k+1] = formation[indexFormation][5]; //finishing hour
                             population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
+
+                            vector<float> currPosition = population[indexInterface]->currentPosition;
+                            vector<float> formationPosition = getFormationPosition(indexFormation);
+                            cout << "curr position : " <<  currPosition[0] << ";" << currPosition[1] << endl;
+
+                            float currDistanceDroven = population[indexInterface]->distance;
+                            cout << "currdistance : " << currDistanceDroven << endl;
+                            currDistanceDroven += sqrt(pow(2.0,(currPosition[0] - formationPosition[0])) + pow(2.0,(currPosition[1] - formationPosition[1])));
+                            cout << "currdistance++ : " << currDistanceDroven << endl;
+
+                            // sqrt (
+                            //population[indexInterface]->distance += sqrt(pow(2.0,(population[indexInterface]->currentPosition[0] - newPosition[0])) + pow(2.0,(population[indexInterface]->currentPosition[0] - newPosition[1])));
+                            population[indexInterface]->distance = currDistanceDroven;
+                            population[indexInterface]->currentPosition = formationPosition;
                             break;
                         }
                         else
@@ -158,6 +175,20 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                             population[indexInterface]->time_table[day][k+2] = formation[indexFormation][4]; //starting hour
                             population[indexInterface]->time_table[day][k+3] = formation[indexFormation][5]; //finishing hour
                             population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
+
+                            vector<float> currPosition = population[indexInterface]->currentPosition;
+                            cout << "curr position : " <<  currPosition[0] << ";" << currPosition[1] << endl;
+                            vector<float> formationPosition = getFormationPosition(indexFormation);
+
+                            float currDistanceDroven = population[indexInterface]->distance;
+                            cout << "currdistance : " << currDistanceDroven << endl;
+                            currDistanceDroven += sqrt(pow(2.0,(currPosition[0] - formationPosition[0])) + pow(2.0,(currPosition[1] - formationPosition[1])));
+                            cout << "currdistance++ : " << currDistanceDroven << endl;
+
+                            // sqrt (
+                            //population[indexInterface]->distance += sqrt(pow(2.0,(population[indexInterface]->currentPosition[0] - newPosition[0])) + pow(2.0,(population[indexInterface]->currentPosition[0] - newPosition[1])));
+                            population[indexInterface]->distance = currDistanceDroven;
+                            population[indexInterface]->currentPosition = formationPosition;
                             break;
                         }
                     }

@@ -17,6 +17,8 @@ public:
     int *competence;   // sign and/or LPC
     int *speciality;   // list of the interface's specialty (max 3)
 
+    vector<float> currentPosition;
+
     vector<int> assigned_missions;   // list of missions ids
 
     map < int, vector<int> > time_table; //<jour, liste d'horaires>
@@ -28,6 +30,8 @@ public:
 
         for(int i = 1; i < 7; i++)
             time_table.insert(pair<int, vector<int>>(i ,{-1, -1, -1, -1, -1, -1, -1, -1}));
+
+        currentPosition = {coord[0][0], coord[0][1]};
     }
 
     ~Interface(){
