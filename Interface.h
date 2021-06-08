@@ -18,12 +18,11 @@ public:
     int *speciality;   // list of the interface's specialty (max 3)
 
     vector<float> currentPosition;
-
     vector<int> assigned_missions;   // list of missions ids
 
     map < int, vector<int> > time_table; //<day, schedule list>
 
-    Interface(): assigned_missions(), distance(0){
+    Interface(): assigned_missions(), distance(0.0), fitness(0.0){
 
         competence = new int[2];
         speciality = new int[NBR_SPECIALITES];
@@ -40,12 +39,33 @@ public:
         delete [] speciality;
     }
 
-    void display(){
-        cout << "___ Interface ___ " << endl;
-        displayInterface();
-        cout << "\nTimetable" << endl;
-        displayTimeTable();
-        cout << "_________________ " << endl << endl;
+    Interface& operator=(const Interface& indiv)
+    {
+        if (this != &indiv)
+        {
+            competence = new int[2];
+            competence = indiv.competence;
+
+            speciality = new int[NBR_SPECIALITES];
+
+            for (int i = 0; i < NBR_SPECIALITES; i++)
+                speciality[i] = indiv.speciality[i];
+
+            currentPosition = indiv.currentPosition; //HQ position
+            assigned_missions = indiv.assigned_missions;
+
+            time_table = indiv.time_table;
+        }
+        return *this;
+    }
+
+    friend ostream& operator<<(ostream& out_object, Interface& indiv)
+    {
+        out_object << "___ Interface ___ " << endl;
+        indiv.displayInterface();
+        out_object << "\nTimetable" << endl;
+        indiv.displayTimeTable();
+        return out_object;
     }
 
     void displayInterface(){
@@ -64,12 +84,10 @@ public:
         {
             // Display list of assigned apprentice
 
-            cout << "List of apprentices" << endl;
-
-            cout << "IDs =  { ";
+            cout << "IDs of missions  =  {";
             for (int elem : assigned_missions)
                 cout << elem << ", ";
-            cout << " };\n";
+            cout << "}\n";
         }
         else
             cout << "Interface has no one to work with !" << endl;
@@ -78,8 +96,6 @@ public:
     }
 
     void displayTimeTable(){
-
-        auto it = time_table.begin();
 
         for (pair<int, vector<int>> element : time_table) {
 
@@ -94,8 +110,6 @@ public:
 
             cout << endl;
         }
-
-        cout << endl;
     }
 
     int getPenalty()
