@@ -2,7 +2,6 @@
 #include <cmath>
 #include "instance-formations.h"
 #include "Interface.h"
-#include <cmath>
 
 using namespace std;
 
@@ -44,6 +43,7 @@ void fillPopulation(Interface *(&population)[NBR_INTERFACES])
         population[i] = intervenant;
     }
 }
+
 bool isSolutionFeasible(Interface *(&population)[NBR_INTERFACES])
 {
     int sum = 0;
@@ -51,9 +51,8 @@ bool isSolutionFeasible(Interface *(&population)[NBR_INTERFACES])
     {
         sum += i->assigned_missions.size();
     }
-    cout << "sum = " << sum << endl;
-    cout << "size of formation : " << (sizeof(formation)/sizeof(*formation)) << endl;
-    return sum == ((sizeof(formation)/sizeof(*formation)));
+
+    return sum == ((sizeof(formation)/sizeof(*formation))); // true if we assigned all the missions false otherwise
 }
 
 
@@ -82,30 +81,22 @@ vector<float> getFormationPosition(int indexFormation)
 {
     if (formation[indexFormation][1] == SPECIALITE_MENUISERIE)
     {
-        cout << "menuiserie " << coord[1][0] << " " <<  coord[1][1] << endl;
         return {coord[1][0], coord[1][1]};
     }
     else if (formation[indexFormation][1] == SPECIALITE_ELECTRICITE)
     {
-        cout << "electricte " << coord[2][0] << " " <<  coord[2][1] << endl;
         return {coord[2][0], coord[2][1]};
     }
     else
     {
-        cout << "autre " << coord[3][0] << " " <<  coord[3][1] << endl;
         return {coord[3][0], coord[3][1]};
     }
 }
 
-bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES], int day, bool partOfDay, int startingPoint)
+bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES], int day, int startingPoint)
 {
     int startingHour = formation[indexFormation][4];
     int endingHour = formation[indexFormation][5];
-    //cout << "startingHour : " << startingHour << " endingHour : " << endingHour << endl;
-    //if (partOfDay == 1)
-    //    cout << "morning" << endl;
-    //else
-    //    cout << "evening" << endl;
     bool available = false;
 
     if (!population[indexInterface]->assigned_missions.empty()) //if interface already has at least 1 mission assigned
@@ -136,80 +127,42 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
     {
         for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
         {
-            if (hasSameCompetence(indexFormation, indexInterface) == 1)
+            if (hasSameCompetence(indexFormation, indexInterface) == 1) //if interface has required competence
             {
-                //cout << "bonnes competences" << endl;
                 int day = getDayFormation(indexFormation); //get day of curr formation
                 bool partOfDay = getPartOfDayFormation(indexFormation); //1 if morning 0 otherwise
-                int startingPoint = partOfDay ? 0 : int(population[indexInterface]->time_table[day].size() / 2);
-                //population[indexInterface]->displayTimeTable();
-                //cout << "day : " << day << " partofDay : " << partOfDay << " startingPoint : " << startingPoint << " interface : " << indexInterface << endl;
-                if (isFree(indexInterface, indexFormation, population, day, partOfDay, startingPoint))
+                int startingPoint = partOfDay ? 0 : int(population[indexInterface]->time_table[day].size() / 2); //morning or afternoon
+
+                if (isFree(indexInterface, indexFormation, population, day, startingPoint)) //if interface is free at formation time
                 {
-                    //cout << "indexFormation : " << indexFormation << " possible" << endl;
-                    for (int k = startingPoint; k < startingPoint+4; k+=2)
+                    for (int indexOnHours = startingPoint; indexOnHours < startingPoint + 4; indexOnHours+=2)
                     {
-                        if (population[indexInterface]->time_table[day][k] == -1)
+                        if (population[indexInterface]->time_table[day][indexOnHours] == -1)
                         {
-                            population[indexInterface]->time_table[day][k] = formation[indexFormation][4]; //starting hour
-                            population[indexInterface]->time_table[day][k+1] = formation[indexFormation][5]; //finishing hour
-                            population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
-
-                            vector<float> currPosition = population[indexInterface]->currentPosition;
-                            vector<float> formationPosition = getFormationPosition(indexFormation);
-                            cout << "curr position : " <<  currPosition[0] << ";" << currPosition[1] << endl;
-
-                            float currDistanceDroven = population[indexInterface]->distance;
-                            cout << "currdistance : " << currDistanceDroven << endl;
-                            currDistanceDroven += sqrt(pow(2.0,(currPosition[0] - formationPosition[0])) + pow(2.0,(currPosition[1] - formationPosition[1])));
-                            cout << "currdistance++ : " << currDistanceDroven << endl;
-
-                            // sqrt (
-                            //population[indexInterface]->distance += sqrt(pow(2.0,(population[indexInterface]->currentPosition[0] - newPosition[0])) + pow(2.0,(population[indexInterface]->currentPosition[0] - newPosition[1])));
-                            population[indexInterface]->distance = currDistanceDroven;
-                            population[indexInterface]->currentPosition = formationPosition;
+                            population[indexInterface]->time_table[day][indexOnHours] = formation[indexFormation][4]; //starting hour
+                            population[indexInterface]->time_table[day][indexOnHours + 1] = formation[indexFormation][5]; //finishing hour
+                            population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation); //updates assigned missions list
                             break;
                         }
                         else
                         {
-                            population[indexInterface]->time_table[day][k+2] = formation[indexFormation][4]; //starting hour
-                            population[indexInterface]->time_table[day][k+3] = formation[indexFormation][5]; //finishing hour
+                            population[indexInterface]->time_table[day][indexOnHours + 2] = formation[indexFormation][4]; //starting hour
+                            population[indexInterface]->time_table[day][indexOnHours + 3] = formation[indexFormation][5]; //finishing hour
                             population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
-
-                            vector<float> currPosition = population[indexInterface]->currentPosition;
-                            cout << "curr position : " <<  currPosition[0] << ";" << currPosition[1] << endl;
-                            vector<float> formationPosition = getFormationPosition(indexFormation);
-
-                            float currDistanceDroven = population[indexInterface]->distance;
-                            cout << "currdistance : " << currDistanceDroven << endl;
-                            currDistanceDroven += sqrt(pow(2.0,(currPosition[0] - formationPosition[0])) + pow(2.0,(currPosition[1] - formationPosition[1])));
-                            cout << "currdistance++ : " << currDistanceDroven << endl;
-
-                            // sqrt (
-                            //population[indexInterface]->distance += sqrt(pow(2.0,(population[indexInterface]->currentPosition[0] - newPosition[0])) + pow(2.0,(population[indexInterface]->currentPosition[0] - newPosition[1])));
-                            population[indexInterface]->distance = currDistanceDroven;
-                            population[indexInterface]->currentPosition = formationPosition;
                             break;
                         }
                     }
+                    vector<float> currPosition = population[indexInterface]->currentPosition;
+                    vector<float> formationPosition = getFormationPosition(indexFormation);
+
+                    population[indexInterface]->distance += sqrt(pow((currPosition[0] - formationPosition[0]),2.0) + pow((currPosition[1] - formationPosition[1]), 2.0));
+                    population[indexInterface]->currentPosition = formationPosition;
                     break;
                 }
-                else
-                {
-                    //cout << "not available" << endl;
-                }
-            }
-            else
-            {
-                //cout << "pas les bonnes competences" << endl;
+
             }
         }
     }
-    float hq[2] = {coord[0][0], coord[0][1]};  // Coordonnées du QG
-
-    /*TODO: ajouter la distance parcourue quand une formation est rentrée.
-     * Needed pour les fonctions évaluation et fitness
-    */
 }
 
 int main()
@@ -233,9 +186,9 @@ int main()
         i->display();
 
     if(isSolutionFeasible(starting_population))
-        cout << "solution feasible" << endl;
+        cout << "Complete solution" << endl;
     else
-        cout << "solution unfeasible" << endl;
+        cout << "Incomplete solution" << endl;
 
 
     return 0;

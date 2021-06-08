@@ -21,7 +21,7 @@ public:
 
     vector<int> assigned_missions;   // list of missions ids
 
-    map < int, vector<int> > time_table; //<jour, liste d'horaires>
+    map < int, vector<int> > time_table; //<day, schedule list>
 
     Interface(): assigned_missions(), distance(0){
 
@@ -31,7 +31,7 @@ public:
         for(int i = 1; i < 7; i++)
             time_table.insert(pair<int, vector<int>>(i ,{-1, -1, -1, -1, -1, -1, -1, -1}));
 
-        currentPosition = {coord[0][0], coord[0][1]};
+        currentPosition = {coord[0][0], coord[0][1]}; //HQ position
     }
 
     ~Interface(){
