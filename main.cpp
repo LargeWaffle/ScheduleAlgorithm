@@ -54,7 +54,8 @@ bool isSolutionFeasible(Interface *(&population)[NBR_INTERFACES])
     {
         sum += i->assigned_missions.size();
     }
-
+    int difference  = sum - ((sizeof(formation)/sizeof(*formation)));
+    cout << abs(difference) << " formations missing" << endl;
     return sum == ((sizeof(formation)/sizeof(*formation))); // true if we assigned all the missions false otherwise
 }
 
@@ -64,8 +65,8 @@ bool hasSameCompetence(int indexFormation, int indexInterface)
     int comp_form = formation[indexFormation][2];
 
     bool result = comp_form == 0 ?
-            competences_interfaces[indexInterface][0] == 1
-            : competences_interfaces[indexInterface][1] == 1;
+                  competences_interfaces[indexInterface][0] == 1
+                                 : competences_interfaces[indexInterface][1] == 1;
 
     return result;
 }
@@ -94,6 +95,12 @@ vector<float> getFormationPosition(int indexFormation)
     }
 }
 
+inline bool areRangesOverlapping(int startTime1, int endTime1, int startTime2, int endTime2)
+{
+    return (endTime1 <= startTime2) || (endTime2 <= startTime1);
+}
+
+
 bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES], int day, int startingPoint)
 {
     int startingHour = formation[indexFormation][4];
@@ -106,9 +113,9 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
         {
             available = true;
         }
-        else if((population[indexInterface]->time_table[day][startingPoint] == -1) && (population[indexInterface]->time_table[day][startingPoint+2] != -1))
+        else if((population[indexInterface]->time_table[day][startingPoint] != -1) && (population[indexInterface]->time_table[day][startingPoint + 2] == -1))
         {
-            if(!((startingHour <= population[indexInterface]->time_table[day][startingPoint+2]) && (endingHour <= population[indexInterface]->time_table[day][startingPoint+3])))
+            if (areRangesOverlapping(startingHour, endingHour, population[indexInterface]->time_table[day][startingPoint], population[indexInterface]->time_table[day][startingPoint+1]))
             {
                 available = true;
             }
@@ -142,20 +149,30 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                         {
                             population[indexInterface]->time_table[day][indexOnHours] = formation[indexFormation][4]; //starting hour
                             population[indexInterface]->time_table[day][indexOnHours + 1] = formation[indexFormation][5]; //finishing hour
-                            population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation); //updates assigned missions list
                             break;
                         }
                         else
                         {
-                            population[indexInterface]->time_table[day][indexOnHours + 2] = formation[indexFormation][4]; //starting hour
-                            population[indexInterface]->time_table[day][indexOnHours + 3] = formation[indexFormation][5]; //finishing hour
-                            population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
+                            if (population[indexInterface]->time_table[day][indexOnHours + 1] <= formation[indexFormation][4])
+                            {
+                                population[indexInterface]->time_table[day][indexOnHours + 2] = formation[indexFormation][4]; //starting hour
+                                population[indexInterface]->time_table[day][indexOnHours + 3] = formation[indexFormation][5]; //finishing hour
+                            }
+                            else
+                            {
+                                //SWAP
+                                population[indexInterface]->time_table[day][indexOnHours + 2] = population[indexInterface]->time_table[day][indexOnHours]; //starting hour
+                                population[indexInterface]->time_table[day][indexOnHours + 3] = population[indexInterface]->time_table[day][indexOnHours + 1];//finishing hour
+                                population[indexInterface]->time_table[day][indexOnHours] = formation[indexFormation][4]; //starting hour
+                                population[indexInterface]->time_table[day][indexOnHours + 1] = formation[indexFormation][5]; //finishing hour
+                            }
                             break;
                         }
                     }
                     vector<float> currPosition = population[indexInterface]->currentPosition;
                     vector<float> formationPosition = getFormationPosition(indexFormation);
 
+                    population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
                     population[indexInterface]->distance += sqrt(pow((currPosition[0] - formationPosition[0]),2.0) + pow((currPosition[1] - formationPosition[1]), 2.0));
                     population[indexInterface]->currentPosition = formationPosition;
                     break;
@@ -164,7 +181,42 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
             }
         }
     }
+
+    if (!(isSolutionFeasible(population)))
+    {
+
+    }
+
 }
+
+// Crossover Operator on two interfaces of the same skill working on the same part of the day
+bool crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfaceOne, int indexInterfaceTwo, int indexFormationOne, int indexFormationTwo)
+{
+    //reversal of assigned missions
+    population[indexInterfaceOne]->assigned_missions.erase(remove(population[indexInterfaceOne]->assigned_missions.begin(), population[indexInterfaceOne]->assigned_missions.end(), indexFormationOne), population[indexInterfaceOne]->assigned_missions.end());
+    population[indexInterfaceTwo]->assigned_missions.erase(remove(population[indexInterfaceTwo]->assigned_missions.begin(), population[indexInterfaceTwo]->assigned_missions.end(), indexFormationTwo), population[indexInterfaceTwo]->assigned_missions.end());
+
+    population[indexInterfaceOne]->assigned_missions.insert(population[indexInterfaceOne]->assigned_missions.begin(),indexFormationTwo);
+    population[indexInterfaceTwo]->assigned_missions.insert(population[indexInterfaceTwo]->assigned_missions.begin(),indexFormationOne);
+
+    //inversion of assigned mission schedules
+    vector <int> daySchedule = population[indexInterfaceOne]->time_table[getDayFormation(indexFormationTwo)];
+    /*
+     * remove indexFormation one de assigned missions de F1
+     * population[indexInterfaceOne]->assigned_missions.erase(remove(population[indexInterfaceOne]->assigned_missions.begin, population[indexInterfaceOne]->assigned_missions.end, indexFormationOne), population[indexInterfaceOne]->assigned_missions.end());
+     * vec.erase(std::remove(vec.begin(), vec.end(), indexFormationOne), vec.end());
+     * vec.erase(std::remove(vec.begin(), vec.end(), indexFormationTwo), vec.end());
+     * remove indexFormation two de assigned missons de F2
+     * ajoute indexFormation two a assigned missions de F1
+     * ajoute indexFormation one a assigned missions de F2
+     *
+     *
+     */
+    //I1's doing the F1 | he's gonna switch with I2 who's doing F2
+    //population[indexFormationOne]->time_table[getDayFormation(indexFormationTwo)][]
+    return true;
+}
+
 
 void tournamentSelection(Interface *(&population)[NBR_INTERFACES], Interface *(&new_pop)[NBR_INTERFACES])
 {
@@ -266,6 +318,8 @@ int main()
         cout << "Complete solution" << endl;
     else
         cout << "Incomplete solution" << endl;
+
+    //crossingOperator(starting_population, 0, 8, 4, 9);
 
     /* Main algo
         1. Init pop - DONE
