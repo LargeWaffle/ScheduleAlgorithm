@@ -3,4 +3,4 @@ project(ScheduleAlgorithm)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(ScheduleAlgorithm Interface.h main.cpp)
+add_executable(ScheduleAlgorithm Interface.h main.cpp Formation.h)

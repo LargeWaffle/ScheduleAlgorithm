@@ -2,8 +2,11 @@
 #include <cmath>
 #include <random>
 #include <functional>
+
 #include "instances/instance-formations39.h"
+
 #include "Interface.h"
+#include "Formation.h"
 
 using namespace std;
 
@@ -69,14 +72,6 @@ bool hasSameCompetence(int indexFormation, int indexInterface)
                                  : competences_interfaces[indexInterface][1] == 1;
 
     return result;
-}
-
-inline int getDayFormation(int indexFormation){
-    return formation[indexFormation][3];
-}
-
-inline bool getPartOfDayFormation(int indexFormation){
-    return formation[indexFormation][4] <= 12;
 }
 
 vector<float> getFormationPosition(int indexFormation)

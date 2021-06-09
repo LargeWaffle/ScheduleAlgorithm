@@ -6,24 +6,9 @@
 #include <map>
 #include <algorithm>
 
+#include "Formation.h"
+
 using namespace std;
-/*
- * class Formation
- *
- * id
- * hDebut
- * hFin
- * day
- * Specialite
- * Competence
- * localisation
- * (interface assignée)
- *
- * map < int, vector<formation> >
- *
- *
- *
- */
 
 class Interface{
 
@@ -37,15 +22,20 @@ public:
     vector<float> currentPosition;
     vector<int> assigned_missions;   // list of missions ids
 
-    map < int, vector<int> > time_table; //<day, schedule list>
+    map < int, vector<Formation> > time_table; //<day, schedule list>
 
     Interface(): assigned_missions(), distance(0.0), fitness(0.0){
 
         competence = new int[2];
         speciality = new int[NBR_SPECIALITES];
 
+        vector<Formation> listFormations;
+
+        for (int i = 0; i < 7; i++)
+            listFormations[i] = Formation();
+
         for(int i = 1; i < 7; i++)
-            time_table.insert(pair<int, vector<int>>(i ,{-1, -1, -1, -1, -1, -1, -1, -1}));
+            time_table.insert(pair<int, vector<Formation>>(i ,listFormations));
 
         currentPosition = {coord[0][0], coord[0][1]}; //HQ position
     }
@@ -114,15 +104,15 @@ public:
 
     void displayTimeTable(){
 
-        for (pair<int, vector<int>> element : time_table) {
+        for (pair<int, vector<Formation>> element : time_table) {
 
             int day = element.first;        // Accessing KEY from element
-            vector<int> schedule = element.second;        // Accessing VALUE from element.
+            vector<Formation> schedule = element.second;        // Accessing VALUE from element.
 
             cout << day << " : ";
-            for(const int& hour : schedule)
+            for(const int& formation : schedule)
             {
-                cout << hour << " | ";
+                cout << formation << endl;
             }
 
             cout << endl;
