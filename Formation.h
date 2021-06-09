@@ -30,7 +30,7 @@ public:
     };
 
     Formation(int id, int day, int hDebut, int hFin, int comp, int spec, float * pos):
-    id(id), day(day), hDebut(hDebut), hFin(hFin), comp(comp), spec(spec)
+            id(id), day(day), hDebut(hDebut), hFin(hFin), comp(comp), spec(spec)
     {
         assigned_interface = new Interface();
         position = new float [2];

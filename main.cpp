@@ -50,6 +50,22 @@ void fillPopulation(Interface *(&population)[NBR_INTERFACES])
     }
 }
 
+void fillFormations(Formation *(&form_list)[NBR_FORMATION])
+{
+    for (int i = 0; i < NBR_FORMATIONS; i++)
+    {
+        auto *form = new Formation();
+
+        form->id = formation[i][0];
+        form->spec = formation[i][1];
+        form->comp = formation[i][2];
+        form->day = formation[i][3];
+        form->hDebut = formation[i][4];
+        form->hFin = formation[i][5];
+
+        form_list[i] = form;
+    }
+}
 bool isSolutionFeasible(Interface *(&population)[NBR_INTERFACES])
 {
     int sum = 0;
@@ -359,9 +375,15 @@ int main()
 
     Interface *starting_population[NBR_INTERFACES];
     Interface *next_population[NBR_INTERFACES];
+    Formation *formations_list[NBR_FORMATIONS];
 
     fillPopulation(starting_population);    // Remplir la solution initiale starting_population
+    fillFormations(formations_list);
 
+    for(Formation *f : formations_list)
+        cout << *f << endl;
+
+    /*
     greedyFirstSolution(starting_population);
     createNewPopulation(starting_population, next_population);
 
@@ -385,7 +407,7 @@ int main()
         cout << "Incomplete solution" << endl;
 
     //crossingOperator(starting_population, 1, 2, 21, 32);
-
+    */
 
     /* Main algo
         1. Init pop - DONE
