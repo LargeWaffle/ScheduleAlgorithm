@@ -2,7 +2,7 @@
 #include <cmath>
 #include <random>
 #include <functional>
-#include "instances/instance-formations320.h"
+#include "instances/instance-formations39.h"
 #include "Interface.h"
 
 using namespace std;
@@ -131,66 +131,94 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
 
 void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 {
-    for (int indexFormation = 0; indexFormation < NBR_FORMATIONS; indexFormation++)
+    //vector created to keep track of missing formations at the end of greedy
+    vector<int> formationIndexes(NBR_FORMATIONS);
+    for (int i = 0; i < NBR_FORMATIONS; i++)
     {
-        for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
-        {
-            if (hasSameCompetence(indexFormation, indexInterface) == 1) //if interface has required competence
-            {
-                int day = getDayFormation(indexFormation); //get day of curr formation
-                bool partOfDay = getPartOfDayFormation(indexFormation); //1 if morning 0 otherwise
-                int startingPoint = partOfDay ? 0 : int(population[indexInterface]->time_table[day].size() / 2); //morning or afternoon
+        formationIndexes[i] = i;
+    }
 
-                if (isFree(indexInterface, indexFormation, population, day, startingPoint)) //if interface is free at formation time
+    //for (auto i : formationIndexes)
+    //{
+    //    cout << i << " ";
+    //}
+    //int count = 0;
+    //while (!(formationIndexes.empty()))
+    //while (count != 10)
+    //{
+    //while (!(formationIndexes.empty()) && (count != 1500))
+    //{
+        //int indexFormation = formationIndexes[0];
+        //for(auto indexFormation : formationIndexes)
+        for (int indexFormation = 0; indexFormation < NBR_FORMATIONS; indexFormation++)
+        {
+            //cout << indexFormation << endl;
+            for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
+            {
+                if (hasSameCompetence(indexFormation, indexInterface) == 1) //if interface has required competence
                 {
-                    for (int indexOnHours = startingPoint; indexOnHours < startingPoint + 4; indexOnHours+=2)
+                    int day = getDayFormation(indexFormation); //get day of curr formation
+                    bool partOfDay = getPartOfDayFormation(indexFormation); //1 if morning 0 otherwise
+                    int startingPoint = partOfDay ? 0 : int(population[indexInterface]->time_table[day].size() / 2); //morning or afternoon
+
+                    if (isFree(indexInterface, indexFormation, population, day, startingPoint)) //if interface is free at formation time
                     {
-                        if (population[indexInterface]->time_table[day][indexOnHours] == -1)
+                        for (int indexOnHours = startingPoint; indexOnHours < startingPoint + 4; indexOnHours+=2)
                         {
-                            population[indexInterface]->time_table[day][indexOnHours] = formation[indexFormation][4]; //starting hour
-                            population[indexInterface]->time_table[day][indexOnHours + 1] = formation[indexFormation][5]; //finishing hour
-                            break;
-                        }
-                        else
-                        {
-                            if (population[indexInterface]->time_table[day][indexOnHours + 1] <= formation[indexFormation][4])
+                            if (population[indexInterface]->time_table[day][indexOnHours] == -1)
                             {
-                                population[indexInterface]->time_table[day][indexOnHours + 2] = formation[indexFormation][4]; //starting hour
-                                population[indexInterface]->time_table[day][indexOnHours + 3] = formation[indexFormation][5]; //finishing hour
+                                population[indexInterface]->time_table[day][indexOnHours] = formation[indexFormation][4]; //starting hour
+                                population[indexInterface]->time_table[day][indexOnHours + 1] = formation[indexFormation][5]; //finishing hour
+                                break;
                             }
                             else
                             {
-                                //SWAP
-                                population[indexInterface]->time_table[day][indexOnHours + 2] = population[indexInterface]->time_table[day][indexOnHours]; //starting hour
-                                population[indexInterface]->time_table[day][indexOnHours + 3] = population[indexInterface]->time_table[day][indexOnHours + 1];//finishing hour
-                                population[indexInterface]->time_table[day][indexOnHours] = formation[indexFormation][4]; //starting hour
-                                population[indexInterface]->time_table[day][indexOnHours + 1] = formation[indexFormation][5]; //finishing hour
+                                if (population[indexInterface]->time_table[day][indexOnHours + 1] <= formation[indexFormation][4])
+                                {
+                                    population[indexInterface]->time_table[day][indexOnHours + 2] = formation[indexFormation][4]; //starting hour
+                                    population[indexInterface]->time_table[day][indexOnHours + 3] = formation[indexFormation][5]; //finishing hour
+                                }
+                                else
+                                {
+                                    //SWAP
+                                    population[indexInterface]->time_table[day][indexOnHours + 2] = population[indexInterface]->time_table[day][indexOnHours]; //starting hour
+                                    population[indexInterface]->time_table[day][indexOnHours + 3] = population[indexInterface]->time_table[day][indexOnHours + 1];//finishing hour
+                                    population[indexInterface]->time_table[day][indexOnHours] = formation[indexFormation][4]; //starting hour
+                                    population[indexInterface]->time_table[day][indexOnHours + 1] = formation[indexFormation][5]; //finishing hour
+                                }
+                                break;
                             }
-                            break;
                         }
+                        vector<float> currPosition = population[indexInterface]->currentPosition;
+                        vector<float> formationPosition = getFormationPosition(indexFormation);
+
+                        //delete assigned formation from formationIndexes vector
+                        formationIndexes.erase(remove(formationIndexes.begin(), formationIndexes.end(), indexFormation), formationIndexes.end());
+
+                        //add assigned mission to current interface assigned missions vector
+                        population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
+
+                        //update the distance traveled by the interface
+                        population[indexInterface]->distance += sqrt(pow((currPosition[0] - formationPosition[0]),2.0) + pow((currPosition[1] - formationPosition[1]), 2.0));
+
+                        //update current position of the interface
+                        population[indexInterface]->currentPosition = formationPosition;
+
+                        break;
                     }
-                    vector<float> currPosition = population[indexInterface]->currentPosition;
-                    vector<float> formationPosition = getFormationPosition(indexFormation);
 
-                    population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),indexFormation);
-                    population[indexInterface]->distance += sqrt(pow((currPosition[0] - formationPosition[0]),2.0) + pow((currPosition[1] - formationPosition[1]), 2.0));
-                    population[indexInterface]->currentPosition = formationPosition;
-                    break;
                 }
-
             }
-        }
+        // += 1;
     }
 
-    if (!(isSolutionFeasible(population)))
-    {
 
-    }
+    //}
 
 }
 
-// Crossover Operator on two interfaces of the same skill working on the same part of the day
-bool crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfaceOne, int indexInterfaceTwo, int indexFormationOne, int indexFormationTwo)
+// Crossover Operator on two interfaces given two formation slots
+void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfaceOne, int indexInterfaceTwo, int indexFormationOne, int indexFormationTwo)
 {
     //reversal of assigned missions
     population[indexInterfaceOne]->assigned_missions.erase(remove(population[indexInterfaceOne]->assigned_missions.begin(), population[indexInterfaceOne]->assigned_missions.end(), indexFormationOne), population[indexInterfaceOne]->assigned_missions.end());
@@ -199,22 +227,26 @@ bool crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
     population[indexInterfaceOne]->assigned_missions.insert(population[indexInterfaceOne]->assigned_missions.begin(),indexFormationTwo);
     population[indexInterfaceTwo]->assigned_missions.insert(population[indexInterfaceTwo]->assigned_missions.begin(),indexFormationOne);
 
-    //inversion of assigned mission schedules
-    vector <int> daySchedule = population[indexInterfaceOne]->time_table[getDayFormation(indexFormationTwo)];
-    /*
-     * remove indexFormation one de assigned missions de F1
-     * population[indexInterfaceOne]->assigned_missions.erase(remove(population[indexInterfaceOne]->assigned_missions.begin, population[indexInterfaceOne]->assigned_missions.end, indexFormationOne), population[indexInterfaceOne]->assigned_missions.end());
-     * vec.erase(std::remove(vec.begin(), vec.end(), indexFormationOne), vec.end());
-     * vec.erase(std::remove(vec.begin(), vec.end(), indexFormationTwo), vec.end());
-     * remove indexFormation two de assigned missons de F2
-     * ajoute indexFormation two a assigned missions de F1
-     * ajoute indexFormation one a assigned missions de F2
-     *
-     *
-     */
-    //I1's doing the F1 | he's gonna switch with I2 who's doing F2
-    //population[indexFormationOne]->time_table[getDayFormation(indexFormationTwo)][]
-    return true;
+    //declare intermediate variables for readability
+    int startHF1 = formation[indexFormationOne][4];
+    int startHF2 = formation[indexFormationTwo][4];
+
+    int dayF1 = getDayFormation(indexFormationOne);
+    int dayF2 = getDayFormation(indexFormationTwo);
+
+    int endHF1 = formation[indexFormationOne][5];
+    int endHF2 = formation[indexFormationTwo][5];
+
+    int startingPointF1 = dayF1 ? 0 : int(population[indexInterfaceOne]->time_table[dayF1].size() / 2);
+    int startingPointF2 = dayF2 ? 0 : int(population[indexInterfaceTwo]->time_table[dayF2].size() / 2);
+
+    //adding Formation 2 to Interface 1 schedule
+    population[indexInterfaceOne]->time_table[dayF2][startingPointF2] = startHF2;
+    population[indexInterfaceOne]->time_table[dayF2][startingPointF2+1] = endHF2;
+
+    //adding Formation 1 to Interface 2 schedule
+    population[indexInterfaceTwo]->time_table[dayF1][startingPointF1] = startHF1;
+    population[indexInterfaceTwo]->time_table[dayF1][startingPointF1+1] = endHF1;
 }
 
 
@@ -311,15 +343,21 @@ int main()
     eval = evaluatePopulation(next_population);
     cout << "Eval of next pop is " << eval << endl;
 
-    for(Interface *i : next_population)
+    cout << *starting_population[1] << endl << *starting_population[2] << endl;
+
+    for(Interface *i : starting_population)
         cout << *i << endl;
+
+    //for(Interface *i : next_population)
+    //    cout << *i << endl;
 
     if(isSolutionFeasible(starting_population))
         cout << "Complete solution" << endl;
     else
         cout << "Incomplete solution" << endl;
 
-    //crossingOperator(starting_population, 0, 8, 4, 9);
+    //crossingOperator(starting_population, 1, 2, 21, 32);
+
 
     /* Main algo
         1. Init pop - DONE
