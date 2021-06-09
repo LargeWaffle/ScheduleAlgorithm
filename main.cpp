@@ -128,6 +128,43 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
 
     return available;
 }
+/*
+bool areFormationTheSame(int indexFormation, int indexOnDay, int indexHour, vector<int> daySchedule)
+{
+    if (getDayFormation(indexFormation) == indexOnDay) //if they are on the same day
+    {
+        if ((formation[indexFormation][4] == daySchedule[indexHour]) && (formation[indexFormation][5] == daySchedule[indexHour+1])) //if they have the same hours
+        {
+            if
+        }
+}
+
+void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES])
+{
+    for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
+    {
+        vector<int> assignedMissions = population[indexInterface]->assigned_missions;
+
+        for (int indexOnDay = 1; indexOnDay < 7; indexOnDay++)
+        {
+            //retrieve the schedule of the day number indexOnDay from the interface at index indexInterface
+            vector<int> daySchedule = population[indexInterface]->time_table[indexOnDay];
+            for (int indexHour = 0; indexHour < daySchedule.size(); indexHour +=2)
+            {
+                for (auto indexFormation : assignedMissions) //look through assigned missions to find corresponding formation
+                {
+                    if (areFormationTheSame(indexFormation, indexOnDay, indexHour, daySchedule))
+                    {
+
+                    }
+
+                    }
+                }
+            }
+
+        }
+    }
+}*/
 
 void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 {
@@ -261,7 +298,7 @@ void tournamentSelection(float mean_distance, vector<Interface*> pool, Interface
     uniform_int_distribution<int> pool_distribution(0, pool_length - 1);
 
     for (int i = 0; i < tournament_pool_length; i++) {
-        tournament_pool[i] = pool[pool_distribution(nb_gen)];
+        tournament_pool.push_back(pool[pool_distribution(nb_gen)]);
 
         while (result_pool.size() != tournament_pool_length) {
             float maxFitness = 0;

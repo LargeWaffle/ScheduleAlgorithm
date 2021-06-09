@@ -7,6 +7,23 @@
 #include <algorithm>
 
 using namespace std;
+/*
+ * class Formation
+ *
+ * id
+ * hDebut
+ * hFin
+ * day
+ * Specialite
+ * Competence
+ * localisation
+ * (interface assignée)
+ *
+ * map < int, vector<formation> >
+ *
+ *
+ *
+ */
 
 class Interface{
 
