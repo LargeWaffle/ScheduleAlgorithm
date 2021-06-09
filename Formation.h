@@ -37,6 +37,28 @@ public:
         position = pos;
     };
 
+    Formation& operator=(const Formation& form)
+    {
+        if (this != &form)
+        {
+            id = form.id;
+            day = form.day;
+
+            hDebut = form.hDebut;
+            hFin = form.hFin;
+
+            comp = form.comp;
+            spec = form.spec;
+
+            position = new int[2];
+            position = form.position;
+
+            assigned_interface = new Interface();
+            assigned_interface = form.assigned_interface;
+        }
+        return *this;
+    }
+
     ~Formation()
     {
         delete assigned_interface;
