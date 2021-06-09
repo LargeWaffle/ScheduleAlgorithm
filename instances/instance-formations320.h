@@ -1,4 +1,4 @@
-#define NBR_INTERFACES        24
+ #define NBR_INTERFACES        24
 #define NBR_APPRENANTS        80
 #define NBR_FORMATIONS        320
 #define NBR_CENTRES_FORMATION 5
