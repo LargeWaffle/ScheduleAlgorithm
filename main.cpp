@@ -307,14 +307,13 @@ void tournamentSelection(float mean_distance, vector<Interface*> pool, Interface
             for (auto &indiv : tournament_pool) {
                 indiv->evaluateIndividu(mean_distance);
 
-                if (indiv->fitness > maxFitness) {
+                if (indiv->fitness >= maxFitness) {
                     bestInterface = indiv;
                     maxFitness = indiv->fitness;
                 }
             }
             result_pool.push_back(bestInterface);
-            tournament_pool.erase(remove(tournament_pool.begin(), tournament_pool.end(), bestInterface),
-                                  tournament_pool.end());
+            tournament_pool.erase(remove(tournament_pool.begin(), tournament_pool.end(), bestInterface), tournament_pool.end());
         }
 
         int secondTurn = secondSelection ? tournament_pool_length + 1 : 0;
