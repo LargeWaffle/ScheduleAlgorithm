@@ -134,10 +134,13 @@ public:
 
     float evaluateIndividu(float meandistance)
     {
-        //TODO: To reconsider if values are weird
-
         int nbSpeciality = (int)assigned_missions.size() - getPenalty();
-        return 0.7 * nbSpeciality + 0.3 * 1/ abs(meandistance - distance);
+        int emptyInterface = distance == 0 ? 50 : 0;
+
+        float score = 0.7 * (nbSpeciality + emptyInterface) + 0.3 * 1/ abs(meandistance - distance);
+        this->fitness = score;
+
+        return score;
     }
 };
 
