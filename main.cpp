@@ -2,7 +2,7 @@
 #include <cmath>
 #include <random>
 #include <functional>
-#include "instance-formations.h"
+#include "instances/instance-formations320.h"
 #include "Interface.h"
 
 using namespace std;
