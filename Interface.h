@@ -32,10 +32,12 @@ public:
         vector<Formation> listFormations;
 
         for (int i = 0; i < 7; i++)
-            listFormations[i] = Formation();
+            listFormations.push_back(Formation());
+            //listFormations[i] = Formation();
 
         for(int i = 1; i < 7; i++)
-            time_table.insert(pair<int, vector<Formation>>(i ,listFormations));
+            vector<Formation> copyListFormations = listFormations;
+            time_table.insert(pair<int, vector<Formation>>(i ,copyListFormations));
 
         currentPosition = {coord[0][0], coord[0][1]}; //HQ position
     }
@@ -110,7 +112,7 @@ public:
             vector<Formation> schedule = element.second;        // Accessing VALUE from element.
 
             cout << day << " : ";
-            for(const int& formation : schedule)
+            for(auto& formation : schedule)
             {
                 cout << formation << endl;
             }
