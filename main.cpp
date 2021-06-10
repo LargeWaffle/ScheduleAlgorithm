@@ -297,8 +297,10 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
 }
 
 void tournamentSelection(float mean_distance, vector<Interface*> pool, Interface *(&new_pop)[NBR_INTERFACES], bool secondSelection = false) {
+
     int pool_length = pool.size(); // 24
     int tournament_pool_length = pool_length / 2; //12
+    float score;
 
     vector<Interface *> tournament_pool;
     vector<Interface *> result_pool;
@@ -315,18 +317,18 @@ void tournamentSelection(float mean_distance, vector<Interface*> pool, Interface
             Interface *bestInterface;
 
             for (auto &indiv : tournament_pool) {
-                indiv->evaluateIndividu(mean_distance);
+                score = indiv->evaluateIndividu(mean_distance);
 
-                if (indiv->fitness >= maxFitness) {
+                if (score >= maxFitness) {
                     bestInterface = indiv;
-                    maxFitness = indiv->fitness;
+                    maxFitness = score;
                 }
             }
             result_pool.push_back(bestInterface);
             tournament_pool.erase(remove(tournament_pool.begin(), tournament_pool.end(), bestInterface), tournament_pool.end());
         }
 
-        int secondTurn = secondSelection ? tournament_pool_length + 1 : 0;
+        int secondTurn = secondSelection ? tournament_pool_length  : 0;
 
         for (int j = 0; j < result_pool.size(); j++) {
             new_pop[j + secondTurn] = result_pool[j];
@@ -337,7 +339,7 @@ void tournamentSelection(float mean_distance, vector<Interface*> pool, Interface
 
 void createNewPopulation(Interface *(&population)[NBR_INTERFACES], Interface *(&new_pop)[NBR_INTERFACES])
 {
-    float travelDistance = 0.0;
+    float mean_distance, travelDistance = 0.0;
 
     vector<Interface *> sign_pool;
     vector<Interface *> lpc_pool;
@@ -351,17 +353,16 @@ void createNewPopulation(Interface *(&population)[NBR_INTERFACES], Interface *(&
         if (population[i]->competence[0] == 1 && population[i]->competence[1] == 0)
             sign_pool.push_back(population[i]);
 
-        else if(population[i]->competence[0] == 1 && population[i]->competence[1] == 0)
+        else if(population[i]->competence[0] == 0 && population[i]->competence[1] == 1)
             lpc_pool.push_back(population[i]);
         else
-            if(sign_pool.size() < lpc_pool.size())
-                sign_pool.push_back(population[i]);
-            else
-                lpc_pool.push_back(population[i]);
-    }
+            sign_pool.size() < lpc_pool.size() ? sign_pool.push_back(population[i]) : lpc_pool.push_back(population[i]);
 
-    tournamentSelection(getMean(travelDistance), sign_pool, new_pop);
-    tournamentSelection(getMean(travelDistance), lpc_pool, new_pop, true);
+    }
+    mean_distance = getMean(travelDistance);
+
+    tournamentSelection(mean_distance, sign_pool, new_pop);
+    tournamentSelection(mean_distance, lpc_pool, new_pop, true);
 }
 
 int main()
