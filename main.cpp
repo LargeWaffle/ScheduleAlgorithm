@@ -296,71 +296,104 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
     //population[indexInterfaceTwo]->time_table[dayF1][startingPointF1+1] = endHF1;
 }
 
-void tournamentSelection(float mean_distance, vector<Interface*> pool, Interface *(&new_pop)[NBR_INTERFACES], bool secondSelection = false) {
+pair<Interface*, Interface*> tournamentSelection(Interface *(&population)[NBR_INTERFACES], bool secondPool = false) {
 
-    int pool_length = pool.size(); // 24
-    int tournament_pool_length = pool_length / 2; //12
-    float score;
+    int pool_length, tournament_pool_length;
+    float bestScore, secondBestScore, currScore, mean_distance, travelDistance = 0.0;
 
-    vector<Interface *> tournament_pool;
-    vector<Interface *> result_pool;
+    vector<Interface *> pool;
+
+
+    // POOL FILLING
+
+    for(auto & indiv : population){
+        travelDistance += indiv->distance;
+
+        if (secondPool){
+            if (indiv->competence[0] == 1)
+                pool.push_back(indiv);
+        }
+        else{
+            if(indiv->competence[1] == 1)
+                pool.push_back(indiv);
+        }
+    }
+
+    mean_distance = getMean(travelDistance);
+
+    pool_length = pool.size();
+    tournament_pool_length = pool_length / 2;
+
+    vector<Interface *> tournament_pool(tournament_pool_length);
 
     random_device rd;
     mt19937 nb_gen(rd());
     uniform_int_distribution<int> pool_distribution(0, pool_length - 1);
 
+    // SELECT PARTICIPANTS
+
     for (int i = 0; i < tournament_pool_length; i++)
         tournament_pool.push_back(pool[pool_distribution(nb_gen)]);
 
-    while (result_pool.size() != tournament_pool_length) {
-        float maxFitness = 0;
-        Interface *bestInterface;
+    // GET 2 BEST INTERFACES
 
-        for (auto &indiv : tournament_pool) {
-            score = indiv->evaluateIndividu(mean_distance);
+    pair<Interface*, Interface*> result;
 
-            if (score >= maxFitness) {
-                bestInterface = indiv;
-                maxFitness = score;
-            }
+    Interface *bestInterface;
+    Interface *secondBestInterface;
+
+    bestScore = tournament_pool[1]->evaluateIndividu(mean_distance);
+    bestInterface = tournament_pool[1];
+
+    secondBestScore = tournament_pool[0]->evaluateIndividu(mean_distance);
+    secondBestInterface = tournament_pool[0];
+
+    if(secondBestScore > bestScore){
+        bestScore = tournament_pool[0]->evaluateIndividu(mean_distance);
+        bestInterface = tournament_pool[0];
+
+        secondBestScore = tournament_pool[1]->evaluateIndividu(mean_distance);
+        secondBestInterface = tournament_pool[1];
+    }
+
+    for (int i = 2; i < tournament_pool_length; i++) {
+        currScore = tournament_pool[i]->evaluateIndividu(mean_distance);
+
+        if (currScore > bestScore) {
+            secondBestScore = bestScore;
+            secondBestInterface = bestInterface;
+
+            bestScore = currScore;
+            bestInterface = tournament_pool[i];
         }
-        result_pool.push_back(bestInterface);
-        tournament_pool.erase(remove(tournament_pool.begin(), tournament_pool.end(), bestInterface), tournament_pool.end());
+        else if (currScore > secondBestScore && currScore != bestScore) {
+            secondBestScore = currScore;
+            secondBestInterface = tournament_pool[i];
+        }
     }
 
-    int secondTurn = secondSelection ? tournament_pool_length  : 0;
+    result.first = bestInterface;
+    result.second = secondBestInterface;
 
-    for (int j = 0; j < result_pool.size(); j++) {
-        new_pop[j + secondTurn] = result_pool[j];
-    }
+    return result;
 }
 
-void createNewPopulation(Interface *(&population)[NBR_INTERFACES], Interface *(&new_pop)[NBR_INTERFACES])
+bool isSwappable(Interface * firstInterface, Interface * (&secondInterface))
 {
-    float mean_distance, travelDistance = 0.0;
 
-    vector<Interface *> sign_pool;
-    vector<Interface *> lpc_pool;
+}
 
-    // remplissage des pools
-    for(int i = 0; i < NBR_INTERFACES; i++){
-        travelDistance += population[i]->distance;
+// add pair<Interface*, Interface*> instead of void if problems occur
 
-        new_pop[i] = new Interface();
+void crossInterfaces(Interface * (&firstInterface), Interface * (&secondInterface))
+{
 
-        if (population[i]->competence[0] == 1 && population[i]->competence[1] == 0)
-            sign_pool.push_back(population[i]);
+    pair<Interface*, Interface*> result;
 
-        else if(population[i]->competence[0] == 0 && population[i]->competence[1] == 1)
-            lpc_pool.push_back(population[i]);
-        else
-            sign_pool.size() < lpc_pool.size() ? sign_pool.push_back(population[i]) : lpc_pool.push_back(population[i]);
 
-    }
-    mean_distance = getMean(travelDistance);
 
-    tournamentSelection(mean_distance, sign_pool, new_pop);
-    tournamentSelection(mean_distance, lpc_pool, new_pop, true);
+
+
 }
 
 int main()
@@ -385,7 +418,7 @@ int main()
 
     /*
     greedyFirstSolution(starting_population);
-    createNewPopulation(starting_population, next_population);
+    pair<<<>>> = tournamentSelection(starting_population);
 
     float eval = evaluatePopulation(starting_population);
     cout << "Eval of starting pop is " << eval << endl;
@@ -407,6 +440,8 @@ int main()
         cout << "Incomplete solution" << endl;
 
     //crossingOperator(starting_population, 1, 2, 21, 32);
+
+
     */
 
     /* Main algo
