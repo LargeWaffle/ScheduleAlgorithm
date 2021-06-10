@@ -309,31 +309,29 @@ void tournamentSelection(float mean_distance, vector<Interface*> pool, Interface
     mt19937 nb_gen(rd());
     uniform_int_distribution<int> pool_distribution(0, pool_length - 1);
 
-    for (int i = 0; i < tournament_pool_length; i++) {
+    for (int i = 0; i < tournament_pool_length; i++)
         tournament_pool.push_back(pool[pool_distribution(nb_gen)]);
 
-        while (result_pool.size() != tournament_pool_length) {
-            float maxFitness = 0;
-            Interface *bestInterface;
+    while (result_pool.size() != tournament_pool_length) {
+        float maxFitness = 0;
+        Interface *bestInterface;
 
-            for (auto &indiv : tournament_pool) {
-                score = indiv->evaluateIndividu(mean_distance);
+        for (auto &indiv : tournament_pool) {
+            score = indiv->evaluateIndividu(mean_distance);
 
-                if (score >= maxFitness) {
-                    bestInterface = indiv;
-                    maxFitness = score;
-                }
+            if (score >= maxFitness) {
+                bestInterface = indiv;
+                maxFitness = score;
             }
-            result_pool.push_back(bestInterface);
-            tournament_pool.erase(remove(tournament_pool.begin(), tournament_pool.end(), bestInterface), tournament_pool.end());
         }
+        result_pool.push_back(bestInterface);
+        tournament_pool.erase(remove(tournament_pool.begin(), tournament_pool.end(), bestInterface), tournament_pool.end());
+    }
 
-        int secondTurn = secondSelection ? tournament_pool_length  : 0;
+    int secondTurn = secondSelection ? tournament_pool_length  : 0;
 
-        for (int j = 0; j < result_pool.size(); j++) {
-            new_pop[j + secondTurn] = result_pool[j];
-        }
-
+    for (int j = 0; j < result_pool.size(); j++) {
+        new_pop[j + secondTurn] = result_pool[j];
     }
 }
 
