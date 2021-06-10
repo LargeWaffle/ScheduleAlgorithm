@@ -19,19 +19,19 @@ float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
 {
     int nbPenalty = 0;    //get total number of specialties non fufilled
 
-    float travelDistance = 0.0, valVariance = 0.0;
+    float travelDistance = 0.0, varianceValue = 0.0;
     float variance, ecart_type, mean_distance, correlation;      // facteur de correlation (cf. pdf)
 
     for (auto & indiv : population) {
         nbPenalty += indiv->getPenalty();
         travelDistance += indiv->distance;
-        valVariance += indiv->distance * indiv->distance;
+        varianceValue += indiv->distance * indiv->distance;
     }
 
     mean_distance = getMean(travelDistance);
     correlation = travelDistance / NBR_FORMATIONS;
 
-    variance = valVariance / pow((NBR_INTERFACES - mean_distance), 2);
+    variance = varianceValue / pow((NBR_INTERFACES - mean_distance), 2);
 
     ecart_type = sqrt(variance);
 
@@ -61,8 +61,8 @@ void fillFormations(Formation *(&form_list)[NBR_FORMATION])
         form->spec = formation[i][1];
         form->comp = formation[i][2];
         form->day = formation[i][3];
-        form->hDebut = formation[i][4];
-        form->hFin = formation[i][5];
+        form->startHour = formation[i][4];
+        form->endHour = formation[i][5];
 
         form_list[i] = form;
     }
@@ -120,16 +120,16 @@ inline int day(int indexFormation)
 
 inline bool isAmplitudeOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation)
 {
-    if (population[indexInterface]->time_table[day(indexFormation)][0]->hDebut != -1)
+    if (population[indexInterface]->time_table[day(indexFormation)][0]->startHour != -1)
     {
-        return population[indexInterface]->time_table[day(indexFormation)][0]->hDebut + formations_list[indexFormation]->hFin > 12;
+        return population[indexInterface]->time_table[day(indexFormation)][0]->startHour + formations_list[indexFormation]->endHour > 12;
     }
     return false;
 }
 
 inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation)
 {
-    return population[indexInterface]->hoursWorked + (formations_list[indexFormation]->hFin - formations_list[indexFormation]->hDebut) > 35;
+    return population[indexInterface]->hoursWorked + (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour) > 35;
 }
 
 
@@ -141,11 +141,11 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
         {
             return true;
         }
-        else if(formations_list[indexFormation]->hFin <= population[indexInterface]->time_table[day(indexFormation)][0]->hDebut)
+        else if(formations_list[indexFormation]->endHour <= population[indexInterface]->time_table[day(indexFormation)][0]->startHour)
         {
             return true;
         }
-        else if (formations_list[indexFormation]->hDebut >= population[indexInterface]->time_table[day(indexFormation)][population[indexInterface]->time_table[day(indexFormation)].size()-1]->hFin)
+        else if (formations_list[indexFormation]->startHour >= population[indexInterface]->time_table[day(indexFormation)][population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour)
         {
             return true;
         }
@@ -154,11 +154,11 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
             int indexOnDaySchedule = 0;
             for (auto &currForm : population[indexInterface]->time_table[day(indexFormation)])
             {
-                if(formations_list[indexFormation]->hDebut > currForm->hFin)
+                if(formations_list[indexFormation]->startHour > currForm->endHour)
                 {
                     if(indexOnDaySchedule != population[indexInterface]->time_table[day(indexFormation)].size()-1)
                     {
-                        if(formations_list[indexFormation]->hFin <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule+1]->hDebut)
+                        if(formations_list[indexFormation]->endHour <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule + 1]->startHour)
                         {
                             return true;
                         }
@@ -166,9 +166,9 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
                 }
                 else if (indexOnDaySchedule != population[indexInterface]->time_table[day(indexFormation)].size()-1)
                 {
-                    if(formations_list[indexFormation]->hDebut == currForm->hFin)
+                    if(formations_list[indexFormation]->startHour == currForm->endHour)
                     {
-                        if(formations_list[indexFormation]->hFin <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule+1]->hDebut)
+                        if(formations_list[indexFormation]->endHour <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule + 1]->startHour)
                         {
                             return true;
                         }
@@ -362,7 +362,6 @@ pair<Interface*, Interface*> tournamentSelection(Interface *(&population)[NBR_IN
 
     vector<Interface *> pool;
 
-
     // POOL FILLING
 
     for(auto & indiv : population){
@@ -437,7 +436,7 @@ pair<Interface*, Interface*> tournamentSelection(Interface *(&population)[NBR_IN
     return result;
 }
 
-bool isSwappable(Interface * firstInterface, Interface * (&secondInterface))
+bool isSwappable(Interface * (&firstInterface), Interface * (&secondInterface))
 {
 
 }

@@ -107,7 +107,7 @@ public:
         {
             // Display list of assigned apprentice
 
-            cout << "IDs of missions  =  {";
+            cout << "Missions IDs =  {";
             for (int elem : assigned_missions)
                 cout << elem << ", ";
             cout << "}\n";
@@ -115,7 +115,7 @@ public:
         else
             cout << "Interface has no one to work with !" << endl;
 
-        cout << "and he travelled " << distance << " kms" << endl;
+        cout << "and he travelled " << distance << " m" << endl;
     }
 
     void displayTimeTable(){
