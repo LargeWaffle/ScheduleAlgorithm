@@ -20,19 +20,16 @@ public:
 
     float * position;
 
-    //Interface * assigned_interface;
-
     Formation(): id(-1), day(-1), hDebut(-1), hFin(-1), comp(-1), spec(-1)
     {
-        //assigned_interface = new Interface();
         position = new float [2];
         position[0] = position[1] = -1.0;
     };
 
     Formation(int id, int day, int hDebut, int hFin, int comp, int spec, float * pos):
-            id(id), day(day), hDebut(hDebut), hFin(hFin), comp(comp), spec(spec)
+    id(id), day(day), hDebut(hDebut), hFin(hFin), comp(comp), spec(spec)
     {
-        //assigned_interface = new Interface();
+
         position = new float [2];
         position = pos;
     };
@@ -50,18 +47,15 @@ public:
             comp = form.comp;
             spec = form.spec;
 
-            position = new float[2];
+            position = new float [2];
             position = form.position;
 
-            //assigned_interface = new Interface();
-            //assigned_interface = form.assigned_interface;
         }
         return *this;
     }
 
     ~Formation()
     {
-        //delete assigned_interface;
         delete [] position;
     };
 
@@ -72,12 +66,12 @@ public:
     friend ostream& operator<<(ostream& out_object, Formation& form)
     {
         out_object << "___ Formation ___ " << endl;
-        out_object << "ID : " << form.id << endl;
+        out_object << "ID "<< form.id;
+        out_object << " - day " << form.day << endl;
 
-        out_object << "Day : " << form.day;
-        cout << "Starts at : " << form.hDebut << " and ends at " << form.hFin << endl;
+        cout << "Slot : " << form.hDebut << " - " << form.hFin << endl;
 
-        out_object << "My position is : {" << form.position[0] << ", " << form.position[1] << "}" << endl;
+        out_object << "My position is {" << form.position[0] << ", " << form.position[1] << "}" << endl;
 
         return out_object;
     }

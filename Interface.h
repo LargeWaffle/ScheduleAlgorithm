@@ -22,22 +22,28 @@ public:
     vector<float> currentPosition;
     vector<int> assigned_missions;   // list of missions ids
 
-    map < int, vector<Formation> > time_table; //<day, schedule list>
+    map < int, vector<Formation*> > time_table; //<day, schedule list>
 
     Interface(): assigned_missions(), distance(0.0), fitness(0.0){
 
         competence = new int[2];
         speciality = new int[NBR_SPECIALITES];
 
-        vector<Formation> listFormations;
+        vector<Formation*> listFormations;
 
         for (int i = 0; i < 7; i++)
-            listFormations.push_back(Formation());
+        {
+            Formation *form = new Formation();
+            listFormations.push_back(form);
             //listFormations[i] = Formation();
+        }
+
 
         for(int i = 1; i < 7; i++)
-            vector<Formation> copyListFormations = listFormations;
-            time_table.insert(pair<int, vector<Formation>>(i ,copyListFormations));
+        {
+            vector<Formation*> copyListFormations = listFormations;
+            time_table.insert(pair<int, vector<Formation*>>(i ,copyListFormations));
+        }
 
         currentPosition = {coord[0][0], coord[0][1]}; //HQ position
     }
@@ -46,6 +52,14 @@ public:
 
         delete [] competence;
         delete [] speciality;
+
+        for (pair<int, vector<Formation*>> element : time_table) {
+
+            for (auto & form : element.second) {
+                delete form;
+            }
+
+        }
     }
 
     Interface& operator=(const Interface& indiv)
@@ -106,10 +120,10 @@ public:
 
     void displayTimeTable(){
 
-        for (pair<int, vector<Formation>> element : time_table) {
+        for (pair<int, vector<Formation*>> element : time_table) {
 
             int day = element.first;        // Accessing KEY from element
-            vector<Formation> schedule = element.second;        // Accessing VALUE from element.
+            vector<Formation*> schedule = element.second;        // Accessing VALUE from element.
 
             cout << day << " : ";
             for(auto& formation : schedule)
