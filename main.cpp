@@ -6,9 +6,10 @@
 #include "instances/instance-formations39.h"
 
 #include "Interface.h"
-#include "Formation.h"
 
 using namespace std;
+
+Formation *formations_list[NBR_FORMATIONS];
 
 inline float getMean(float travelDistance){
     return travelDistance / NBR_INTERFACES;
@@ -41,12 +42,11 @@ void fillPopulation(Interface *(&population)[NBR_INTERFACES])
 {
     for(int i = 0; i < NBR_INTERFACES; i++)
     {
-        cout << "hello" << endl;
         auto *intervenant = new Interface();
-        cout << "coucou" << endl;
+
         intervenant->competence = competences_interfaces[i];
         intervenant->speciality = specialite_interfaces[i];
-        cout << "au revoir" << endl;
+
         population[i] = intervenant;
     }
 }
@@ -112,15 +112,73 @@ inline bool areRangesOverlapping(int startTime1, int endTime1, int startTime2, i
     return (endTime1 <= startTime2) || (endTime2 <= startTime1);
 }
 
-
-bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES], int day, int startingPoint)
+inline int day(int indexFormation)
 {
-    int startingHour = formation[indexFormation][4];
-    int endingHour = formation[indexFormation][5];
-    bool available = false;
-    /*
+    return formations_list[indexFormation]->day;
+}
+
+
+inline bool isAmplitudeOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation)
+{
+    if (population[indexInterface]->time_table[day(indexFormation)][0]->hDebut != -1)
+    {
+        return population[indexInterface]->time_table[day(indexFormation)][0]->hDebut + formations_list[indexFormation]->hFin > 12;
+    }
+    return false;
+}
+
+inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation)
+{
+    return population[indexInterface]->hoursWorked + (formations_list[indexFormation]->hFin - formations_list[indexFormation]->hDebut) > 35;
+}
+
+
+bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES])
+{
     if (!population[indexInterface]->assigned_missions.empty()) //if interface already has at least 1 mission assigned
     {
+        if (population[indexInterface]->time_table[day(indexFormation)][0]->id == -1)
+        {
+            return true;
+        }
+        else if(formations_list[indexFormation]->hFin <= population[indexInterface]->time_table[day(indexFormation)][0]->hDebut)
+        {
+            return true;
+        }
+        else if (formations_list[indexFormation]->hDebut >= population[indexInterface]->time_table[day(indexFormation)][population[indexInterface]->time_table[day(indexFormation)].size()-1]->hFin)
+        {
+            return true;
+        }
+        else
+        {
+            int indexOnDaySchedule = 0;
+            for (auto &currForm : population[indexInterface]->time_table[day(indexFormation)])
+            {
+                if(formations_list[indexFormation]->hDebut > currForm->hFin)
+                {
+                    if(indexOnDaySchedule != population[indexInterface]->time_table[day(indexFormation)].size()-1)
+                    {
+                        if(formations_list[indexFormation]->hFin <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule+1]->hDebut)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                else if (indexOnDaySchedule != population[indexInterface]->time_table[day(indexFormation)].size()-1)
+                {
+                    if(formations_list[indexFormation]->hDebut == currForm->hFin)
+                    {
+                        if(formations_list[indexFormation]->hFin <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule+1]->hDebut)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        /*
+        //CHECK IF INTERFACE HAS FORMATIONS ASSIGNED ON CORRESPOND PART OF DAY
         if ((population[indexInterface]->time_table[day][startingPoint] == -1) && (population[indexInterface]->time_table[day][startingPoint+2] == -1))
         {
             available = true;
@@ -138,7 +196,8 @@ bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR
         available = true;
     }*/
 
-    return available;
+    return false;
+}
 }
 /*
 bool areFormationTheSame(int indexFormation, int indexOnDay, int indexHour, vector<int> daySchedule)
@@ -373,15 +432,16 @@ int main()
 
     Interface *starting_population[NBR_INTERFACES];
     Interface *next_population[NBR_INTERFACES];
-    Formation *formations_list[NBR_FORMATIONS];
+    //Formation *formations_list[NBR_FORMATIONS];
 
-    cout << "fill population" << endl;
     fillPopulation(starting_population);    // Remplir la solution initiale starting_population
-    cout << "fill formation" << endl;
     fillFormations(formations_list);
 
     for(Formation *f : formations_list)
         cout << *f << endl;
+
+    //for(Interface *i : starting_population)
+    //    cout << *i << endl;
 
     /*
     greedyFirstSolution(starting_population);
