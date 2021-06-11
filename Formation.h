@@ -34,7 +34,7 @@ public:
         position = pos;
     };
 
-    Formation& operator=(const Formation& form)
+    Formation& operator=(Formation *form)
     {
         if (this != &form)
         {

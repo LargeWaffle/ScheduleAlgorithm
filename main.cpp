@@ -132,83 +132,62 @@ inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES]
     return population[indexInterface]->hoursWorked + (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour) > 35;
 }
 
-
-bool isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES])
+pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES])
 {
-    if (!population[indexInterface]->assigned_missions.empty()) //if interface already has at least 1 mission assigned
-    {
-        if (population[indexInterface]->time_table[day(indexFormation)][0]->id == -1)
-        {
-            return true;
-        }
-        else if(formations_list[indexFormation]->endHour <= population[indexInterface]->time_table[day(indexFormation)][0]->startHour)
-        {
-            return true;
-        }
-        else if (formations_list[indexFormation]->startHour >= population[indexInterface]->time_table[day(indexFormation)][population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour)
-        {
-            return true;
-        }
-        else
-        {
-            int indexOnDaySchedule = 0;
-            for (auto &currForm : population[indexInterface]->time_table[day(indexFormation)])
-            {
-                if(formations_list[indexFormation]->startHour > currForm->endHour)
-                {
-                    if(indexOnDaySchedule != population[indexInterface]->time_table[day(indexFormation)].size()-1)
-                    {
-                        if(formations_list[indexFormation]->endHour <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule + 1]->startHour)
-                        {
-                            return true;
-                        }
-                    }
-                }
-                else if (indexOnDaySchedule != population[indexInterface]->time_table[day(indexFormation)].size()-1)
-                {
-                    if(formations_list[indexFormation]->startHour == currForm->endHour)
-                    {
-                        if(formations_list[indexFormation]->endHour <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule + 1]->startHour)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
+    pair <bool, int> result (false, -1);
 
-        /*
-        //CHECK IF INTERFACE HAS FORMATIONS ASSIGNED ON CORRESPOND PART OF DAY
-        if ((population[indexInterface]->time_table[day][startingPoint] == -1) && (population[indexInterface]->time_table[day][startingPoint+2] == -1))
-        {
-            available = true;
-        }
-        else if((population[indexInterface]->time_table[day][startingPoint] != -1) && (population[indexInterface]->time_table[day][startingPoint + 2] == -1))
-        {
-            if (areRangesOverlapping(startingHour, endingHour, population[indexInterface]->time_table[day][startingPoint], population[indexInterface]->time_table[day][startingPoint+1]))
-            {
-                available = true;
-            }
-        }
+    if (population[indexInterface]->time_table[day(indexFormation)][0]->id == -1)
+    {
+        result.first = true;
+        return result;
+    }
+    else if(formations_list[indexFormation]->endHour <= population[indexInterface]->time_table[day(indexFormation)][0]->startHour)
+    {
+        result.first = true;
+        result.second = 0;
+        return result;
+    }
+    else if (formations_list[indexFormation]->startHour >= population[indexInterface]->time_table[day(indexFormation)][population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour)
+    {
+        result.first = true;
+        result.second = int(population[indexInterface]->time_table[day(indexFormation)].size() - 1);
+        return result;
     }
     else
     {
-        available = true;
-    }*/
-
-    return false;
-}
+        int indexOnDaySchedule = 0;
+        for (auto &currForm : population[indexInterface]->time_table[day(indexFormation)])
+        {
+            if(formations_list[indexFormation]->startHour > currForm->endHour)
+            {
+                if(indexOnDaySchedule != population[indexInterface]->time_table[day(indexFormation)].size()-1)
+                {
+                    if(formations_list[indexFormation]->endHour <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule + 1]->startHour)
+                    {
+                        result.first = true;
+                        result.second = indexOnDaySchedule+1;
+                        return result;
+                    }
+                }
+            }
+            else if (indexOnDaySchedule != population[indexInterface]->time_table[day(indexFormation)].size()-1)
+            {
+                if(formations_list[indexFormation]->startHour == currForm->endHour)
+                {
+                    if(formations_list[indexFormation]->endHour <= population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule + 1]->startHour)
+                    {
+                        result.first = true;
+                        result.second = indexOnDaySchedule+1;
+                        return result;
+                    }
+                }
+            }
+        }
+    }
+    return result;
 }
 /*
-bool areFormationTheSame(int indexFormation, int indexOnDay, int indexHour, vector<int> daySchedule)
-{
-    if (getDayFormation(indexFormation) == indexOnDay) //if they are on the same day
-    {
-        if ((formation[indexFormation][4] == daySchedule[indexHour]) && (formation[indexFormation][5] == daySchedule[indexHour+1])) //if they have the same hours
-        {
-            if
-        }
-}
+
 
 void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES])
 {
@@ -256,18 +235,40 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES]) {
     //{
     //int indexFormation = formationIndexes[0];
     //for(auto indexFormation : formationIndexes)
-    for (int indexFormation = 0; indexFormation < NBR_FORMATIONS; indexFormation++) {
-        //cout << indexFormation << endl;
-        for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++) {
+
+
+
+    for (int indexFormation = 0; indexFormation < NBR_FORMATIONS; indexFormation++)
+    {
+        for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
+        {
             if (hasSameCompetence(indexFormation, indexInterface) == 1) //if interface has required competence
             {
-                /*
-                int day = getDayFormation(indexFormation); //get day of curr formation
-                bool partOfDay = getPartOfDayFormation(indexFormation); //1 if morning 0 otherwise
-                int startingPoint = partOfDay ? 0 : int(population[indexInterface]->time_table[day].size() / 2); //morning or afternoon
+                int day_ = day(indexFormation); //get day of curr formation
+                pair<bool,int> result = isFree(indexInterface, indexFormation, population);
 
-                if (isFree(indexInterface, indexFormation, population, day, startingPoint)) //if interface is free at formation time
+                if (result.first)
                 {
+                    if(isAmplitudeOutpassed(population, indexInterface, indexFormation))
+                    {
+                        if(isWeeklyHoursQuotaOutpassed(population, indexInterface, indexFormation))
+                        {
+                            //we have to place the formation at the right place on the day
+                            vector<Formation> daySchedule = reinterpret_cast<const vector<Formation> &>(population[indexInterface]->time_table[day_]);
+                            if (result.second == -1)
+                            {
+                                daySchedule.at(0) = formations_list[indexFormation];
+                            }
+                            else
+                            {
+                                auto it = daySchedule.insert(daySchedule.begin() + result.second, formations_list[indexFormation]);
+                                //it = vec.insert(vec.begin() + i, 7);
+                                // insert 7 at index i
+                            }
+                        }
+                    }
+                }
+                 /*
                     for (int indexOnHours = startingPoint; indexOnHours < startingPoint + 4; indexOnHours+=2)
                     {
                         if (population[indexInterface]->time_table[day][indexOnHours] == -1)
