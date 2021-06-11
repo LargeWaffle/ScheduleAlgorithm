@@ -19,24 +19,21 @@ public:
     int hoursWorked;
     int *competence;   // sign and/or LPC
     int *speciality;   // list of the interface's specialty (max 3)
+
     vector<float> currentPosition;
     vector<int> assigned_missions;   // list of missions ids
+    vector<int> hoursWorkedPerDay;
 
     map < int, vector<Formation*> > time_table; //<day, schedule list>
 
-    Interface(): assigned_missions(), distance(0.0), fitness(0.0), hoursWorked(0){
+    Interface(): assigned_missions(), distance(0.0), fitness(0.0), hoursWorked(0), hoursWorkedPerDay(6,0){
 
         competence = new int[2];
         speciality = new int[NBR_SPECIALITES];
 
         vector<Formation*> listFormations;
-
-        //for (int i = 0; i < 7; i++)
-        //{
         Formation *form = new Formation();
         listFormations.push_back(form);
-            //listFormations[i] = Formation();
-        //}
 
 
         for(int i = 1; i < 7; i++)

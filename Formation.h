@@ -34,7 +34,7 @@ public:
         position = pos;
     };
 
-    Formation& operator=(Formation *form)
+    Formation& operator=(Formation &form)
     {
         if (this != &form)
         {
@@ -58,10 +58,6 @@ public:
     {
         delete [] position;
     };
-
-    inline bool getPartOfDayFormation(){
-        return endHour <= 12;
-    }
 
     friend ostream& operator<<(ostream& out_object, Formation& form)
     {
