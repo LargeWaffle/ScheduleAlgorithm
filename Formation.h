@@ -16,18 +16,18 @@ public:
     int endHour;    // Ending hour of the formation
 
     int comp;   // Required competence
-    int spec;   // Required speciality if possible
+    int indexSpec;   // Required speciality if possible
 
     float * position;   // Place of the formation
 
-    Formation(): id(-1), day(-1), startHour(-1), endHour(-1), comp(-1), spec(-1)
+    Formation(): id(-1), day(-1), startHour(-1), endHour(-1), comp(-1), indexSpec(-1)
     {
         position = new float [2];
         position[0] = position[1] = -1.0;
     }
 
     Formation(int id, int day, int hDebut, int hFin, int comp, int spec, float * pos):
-            id(id), day(day), startHour(hDebut), endHour(hFin), comp(comp), spec(spec)
+            id(id), day(day), startHour(hDebut), endHour(hFin), comp(comp), indexSpec(spec)
     {
 
         position = new float [2];
@@ -45,7 +45,7 @@ public:
             endHour = form.endHour;
 
             comp = form.comp;
-            spec = form.spec;
+            indexSpec = form.indexSpec;
 
             position = new float [2];
             position = form.position;

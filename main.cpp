@@ -74,7 +74,7 @@ void fillFormations(Formation *(&form_list)[NBR_FORMATIONS])
         auto *form = new Formation();
 
         form->id = formation[i][0];
-        form->spec = formation[i][1];
+        form->indexSpec = formation[i][1];
         form->comp = formation[i][2];
         form->day = formation[i][3];
         form->startHour = formation[i][4];
@@ -204,7 +204,7 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES])
             {
                 for (auto & j : timetable.second)
                 {
-                    vector<float> formationPlace = getFormationPosition(j->spec);
+                    vector<float> formationPlace = getFormationPosition(j->indexSpec);
 
                     currInterface->distance += euclideanDistance(currInterface->currentPosition[0], formationPlace[0], currInterface->currentPosition[1], formationPlace[1]);
                     currInterface->currentPosition = formationPlace;
@@ -302,25 +302,34 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
     //population[indexInterfaceTwo]->time_table[dayF1][startingPointF1+1] = endHF1;
 }
 
-pair<Interface*, Interface*> tournamentSelection(Interface *(&population)[NBR_INTERFACES], bool secondPool = false) {
+pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], bool secondPool = false) {
 
     int pool_length, tournament_pool_length;
     float bestScore, secondBestScore, currScore, mean_distance, travelDistance = 0.0;
 
     vector<Interface *> pool;
+    vector<int> indexes;
+    vector<int> tournament_indexes;
+
 
     // POOL FILLING
 
-    for(auto & indiv : population){
-        travelDistance += indiv->distance;
+    for(int i = 0; i < NBR_INTERFACES; i++){
+        travelDistance += population[i]->distance;
 
         if (secondPool){
-            if (indiv->competence[0] == 1)
-                pool.push_back(indiv);
+            if (population[i]->competence[0] == 1)
+            {
+                pool.push_back(population[i]);
+                indexes.push_back(i);
+            }
         }
         else{
-            if(indiv->competence[1] == 1)
-                pool.push_back(indiv);
+            if(population[i]->competence[1] == 1)
+            {
+                pool.push_back(population[i]);
+                indexes.push_back(i);
+            }
         }
     }
 
@@ -338,27 +347,28 @@ pair<Interface*, Interface*> tournamentSelection(Interface *(&population)[NBR_IN
     // SELECT PARTICIPANTS
 
     for (int i = 0; i < tournament_pool_length; i++)
-        tournament_pool.push_back(pool[pool_distribution(nb_gen)]);
+    {
+        int random = pool_distribution(nb_gen);
+        tournament_pool.push_back(pool[random]);
+        tournament_indexes.push_back(random);
+    }
 
     // GET 2 BEST INTERFACES
 
-    pair<Interface*, Interface*> result;
-
-    Interface *bestInterface;
-    Interface *secondBestInterface;
+    pair<int, int> result;
 
     bestScore = tournament_pool[1]->evaluateIndividu(mean_distance);
-    bestInterface = tournament_pool[1];
+    result.first = tournament_indexes[1];
 
     secondBestScore = tournament_pool[0]->evaluateIndividu(mean_distance);
-    secondBestInterface = tournament_pool[0];
+    result.second = tournament_indexes[0];
 
     if(secondBestScore > bestScore){
         bestScore = tournament_pool[0]->evaluateIndividu(mean_distance);
-        bestInterface = tournament_pool[0];
+        result.first = tournament_indexes[0];
 
         secondBestScore = tournament_pool[1]->evaluateIndividu(mean_distance);
-        secondBestInterface = tournament_pool[1];
+        result.second = tournament_indexes[1];
     }
 
     for (int i = 2; i < tournament_pool_length; i++) {
@@ -366,41 +376,118 @@ pair<Interface*, Interface*> tournamentSelection(Interface *(&population)[NBR_IN
 
         if (currScore > bestScore) {
             secondBestScore = bestScore;
-            secondBestInterface = bestInterface;
+            result.second = result.first;
 
             bestScore = currScore;
-            bestInterface = tournament_pool[i];
+            result.first = tournament_indexes[i];
         }
         else if (currScore > secondBestScore && currScore != bestScore) {
             secondBestScore = currScore;
-            secondBestInterface = tournament_pool[i];
+            result.second = tournament_indexes[i];
         }
     }
-
-    result.first = bestInterface;
-    result.second = secondBestInterface;
 
     return result;
 }
 
-bool isSwappable(Interface * (&firstInterface), Interface * (&secondInterface))
+pair<int, int> getNonSpecialityForm(Interface * (&inter))
 {
-    return false;
+    bool quit = false;
+
+    pair<int, int> result(-1, -1);
+
+    for (int i = 1; i < inter->time_table.size() + 1; i++)
+    {
+        for (int j = 0; j < NBR_SPECIALITES; j++)
+        {
+            if(inter->speciality[inter->time_table[i][j]->indexSpec] == 0)
+            {
+                result.first = i; result.second = j;
+                quit = true;
+            }
+        }
+
+        if(quit)
+            break;
+    }
+
+    return result;
+}
+
+pair<int, int> getRandomForm(Interface * (&inter))
+{
+    random_device rd;
+    mt19937 nb_gen(rd());
+
+    uniform_int_distribution<int> day_distribution(1, 6);
+    int rd_day = day_distribution(nb_gen);
+
+    uniform_int_distribution<int> form_distribution(0,  inter->time_table[rd_day].size() - 1);
+    int rd_form = form_distribution(nb_gen);
+
+    return {rd_day, rd_form};
+}
+
+
+bool isSwappable(int indexFirstInterface, int indexSecondInterface, pair<int, int>& firstFormIndexes, pair<int, int>& secondFormIndexes, Interface *(&population)[NBR_INTERFACES])
+{
+    Interface * copy_pop[NBR_INTERFACES];
+
+    for (int i = 0; i < NBR_INTERFACES; i++)
+        copy_pop[i] = population[i];
+
+    Interface * firstInter = copy_pop[indexFirstInterface];
+    Interface * secondInter = copy_pop[indexSecondInterface];
+
+    vector<Formation *> schedule = firstInter->time_table[firstFormIndexes.first];
+    schedule.erase(remove(schedule.begin(), schedule.end(), schedule[firstFormIndexes.second]), schedule.end());
+
+    schedule = secondInter->time_table[secondFormIndexes.first];
+    schedule.erase(remove(schedule.begin(), schedule.end(), schedule[secondFormIndexes.second]), schedule.end());
+
+    //TODO: Check if interfaces are different in copy_pop
+
+    bool swap = isFree(indexFirstInterface, secondFormIndexes.second, copy_pop).first
+            && isFree(indexSecondInterface, firstFormIndexes.second, copy_pop).first;
+
+    return swap;
 }
 
 // add pair<Interface*, Interface*> instead of void if problems occur
-
-void crossInterfaces(Interface * (&firstInterface), Interface * (&secondInterface))
+void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interface *(&population)[NBR_INTERFACES])
 {
-    pair<Interface*, Interface*> result;
+    bool swap = false;
+    pair<int, int> firstFormIndexes;
+    pair<int, int> secondFormIndexes;
+
+    while (!swap)
+    {
+        Interface * firstInterface = population[indexFirstInterface];
+        Interface * secondInterface = population[indexSecondInterface];
+
+        firstFormIndexes = getNonSpecialityForm(firstInterface);
+        secondFormIndexes = getNonSpecialityForm(secondInterface);
+
+        //TODO: check if random value has already been checked
+        if (firstFormIndexes.first == -1)
+            firstFormIndexes = getRandomForm(firstInterface);
+
+
+        if (secondFormIndexes.first == -1)
+            secondFormIndexes = getRandomForm(secondInterface);
+
+        swap = isSwappable(indexFirstInterface, indexSecondInterface, firstFormIndexes, secondFormIndexes, population);
+    }
+
+    crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second);
+
 }
 
-void print_population(Interface *(&population)[NBR_INTERFACES])
+inline void print_population(Interface *(&population)[NBR_INTERFACES])
 {
     for(Interface *i : population)
         cout << *i << endl;
 }
-
 
 int main()
 {
@@ -430,10 +517,8 @@ int main()
     cout << "Eval of starting pop is " << eval << endl;
 
     cout << *starting_population[1] << endl << *starting_population[2] << endl;
-     /*
-    pair<<<>>> = tournamentSelection(starting_population);
 
-    eval = evaluatePopulation(next_population);
+     /*eval = evaluatePopulation(next_population);
     cout << "Eval of next pop is " << eval << endl;
 
     cout << *starting_population[1] << endl << *starting_population[2] << endl;
@@ -444,22 +529,57 @@ int main()
     //for(Interface *i : next_population)
     //    cout << *i << endl;
 
+    //crossingOperator(starting_population, 1, 2, 21, 32);*/
 
 
-    //crossingOperator(starting_population, 1, 2, 21, 32);
-
-
-    */
 
     /* Main algo
-        1. Init pop - DONE
-        2. Eval pop - DONE
+    cout << "IT45 - Probleme d affectation d employes\n" << endl;
+    cout << "Configuration of the problem" << endl;
+    cout << "* Number of Interfaces = " << NBR_INTERFACES << endl;
+    cout << "* Number of Apprentices = " << NBR_APPRENANTS << endl;
+    cout << "* Number of nodes = " << NBR_NODES << endl << endl;
 
-        3. while(nbIteration < limit || score qui stagne)
-            4. next_pop filled grâce à la selection = selection des parents - ALMOST DONE
-            5. Croisement dans next_population
-            6. Contenu de next pop dans starting pop
-            7. Evaluer new pop - DONE
+    int nb_iterations = 0, limit = 50; // (?)
+    Interface *starting_population[NBR_INTERFACES];
+    Interface *next_population[NBR_INTERFACES];
+
+     1. Init pop - DONE
+    fillPopulation(starting_population);    // Fill starting population
+    greedyFirstSolution(starting_population);
+
+     2. Eval pop - DONE
+    float eval = evaluatePopulation(starting_population);
+    cout << "Eval of starting pop is " << eval << endl;
+
+     for (int i = 0; i < NBR_INTERFACES; i++) {
+            next_population[i] = starting_population[i];
+        }
+
+     3. while(nbIteration < limit || score qui stagne)
+     while(nbIteration < limit || ...)
+     {
+        4. next_pop filled grâce à la selection = selection des parents - DONE
+        5. Croisement dans next_population
+
+        for(int i = 0; i < NBR_INTERFACES / 2; i++){
+            pair<int, int> to_cross = tournamentSelection(next_population);
+            crossInterfaces(to_cross.first, to_cross.second, next_population);
+        }
+
+        7. Evaluer new pop - DONE
+        eval = evaluatePopulation(next_population);
+
+        6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
+
+        for (int i = 0; i < NBR_INTERFACES; i++) {
+            starting_population[i] = next_population[i];
+        }
+
+
+
+     } //FIN WHILE
+
      */
 
     return 0;
