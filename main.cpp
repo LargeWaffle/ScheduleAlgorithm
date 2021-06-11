@@ -31,7 +31,7 @@ float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
     mean_distance = getMean(travelDistance);
     correlation = travelDistance / NBR_FORMATIONS;
 
-    variance = varianceValue / pow((NBR_INTERFACES - mean_distance), 2);
+    variance = float(varianceValue / pow((NBR_INTERFACES - mean_distance), 2));
 
     ecart_type = sqrt(variance);
 
@@ -62,7 +62,7 @@ void fillPopulation(Interface *(&population)[NBR_INTERFACES])
 
         intervenant->competence = competences_interfaces[i];
         intervenant->speciality = specialite_interfaces[i];
-
+        intervenant->currentPosition = {coord[0][0], coord[0][1]};
         population[i] = intervenant;
     }
 }
@@ -89,9 +89,9 @@ bool isSolutionFeasible(Interface *(&population)[NBR_INTERFACES])
     int sum = 0;
     for(Interface *i : population)
     {
-        sum += i->assigned_missions.size();
+        sum += int(i->assigned_missions.size());
     }
-    int difference  = sum - ((sizeof(formation)/sizeof(*formation)));
+    int difference  = int(sum - ((sizeof(formation)/sizeof(*formation))));
     cout << abs(difference) << " formations missing" << endl;
     return sum == ((sizeof(formation)/sizeof(*formation))); // true if we assigned all the missions false otherwise
 }
@@ -188,31 +188,35 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
     return result;
 }
 
+auto euclideanDistance(float x1, float x2, float y1, float y2)
+{
+    return float(sqrt(pow(x2 - x1, 2.0)+pow(y2 - y1,2.0)));
+}
+
 
 void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES])
 {
-    for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
+    for (auto &currInterface : population)
     {
-        vector<int> assignedMissions = population[indexInterface]->assigned_missions;
-
-        for (int indexOnDay = 1; indexOnDay < 7; indexOnDay++)
+        for (auto &timetable : currInterface->time_table)
         {
-            //retrieve the schedule of the day number indexOnDay from the interface at index indexInterface
-            vector<int> daySchedule = population[indexInterface]->time_table[indexOnDay];
-            for (int indexHour = 0; indexHour < daySchedule.size(); indexHour +=2)
+            for (int i = 0; i < 6; i++)
             {
-                for (auto indexFormation : assignedMissions) //look through assigned missions to find corresponding formation
+                for (auto & j : timetable.second)
                 {
-                    if (areFormationTheSame(indexFormation, indexOnDay, indexHour, daySchedule))
-                    {
+                    vector<float> formationPlace = getFormationPosition(j->spec);
 
-                    }
-
-                    }
+                    currInterface->distance += euclideanDistance(currInterface->currentPosition[0], formationPlace[0], currInterface->currentPosition[1], formationPlace[1]);
+                    currInterface->currentPosition = formationPlace;
                 }
+                //Distance from last formation to HQ
+                currInterface->distance += euclideanDistance(currInterface->currentPosition[0], coord[0][0], currInterface->currentPosition[1], coord[0][1]);
+                currInterface->currentPosition = {coord[0][0], coord[0][1]};
+
             }
 
         }
+
     }
 }
 
@@ -263,7 +267,7 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES]) {
             }
         }
     }
-    updateInterfaceDistance()
+    updateInterfaceDistance(population);
 }
 
 // Crossover Operator on two interfaces given two formation slots
@@ -322,7 +326,7 @@ pair<Interface*, Interface*> tournamentSelection(Interface *(&population)[NBR_IN
 
     mean_distance = getMean(travelDistance);
 
-    pool_length = pool.size();
+    pool_length = int(pool.size());
     tournament_pool_length = pool_length / 2;
 
     vector<Interface *> tournament_pool(tournament_pool_length);
