@@ -14,17 +14,17 @@ class Interface{
 
 public:
 
-    float distance;     // distance travelled by the Interface
-    float fitness;      // fitness value for genetic selection
-    int hoursWorked;
-    int *competence;   // sign and/or LPC
-    int *speciality;   // list of the interface's specialty (max 3)
+    float distance;     // Distance travelled by the Interface
+    float fitness;      // Fitness value for genetic selection
+    int hoursWorked;    // Amount of hours worked in a week
+    int *competence;   // Sign and/or LPC
+    int *speciality;   // List of the interface's specialty (max is NBR_SPECIALITES)
 
     vector<float> currentPosition;
     vector<int> assigned_missions;   // list of missions ids
     vector<int> hoursWorkedPerDay;
 
-    map < int, vector<Formation*> > time_table; //<day, schedule list>
+    map < int, vector<Formation*> > time_table;     //<day, schedule list>
 
     Interface(): assigned_missions(), distance(0.0), fitness(0.0), hoursWorked(0), hoursWorkedPerDay(6,0){
 
@@ -122,10 +122,11 @@ public:
             int day = element.first;        // Accessing KEY from element
             vector<Formation*> schedule = element.second;        // Accessing VALUE from element.
 
-            cout << day << " : ";
+            cout << "Day " << day << " : ";
             for(auto& formation : schedule)
             {
-                cout << *formation << endl;
+                if(formation->day == day)
+                    cout  << *formation << " | ";
             }
 
             cout << endl;

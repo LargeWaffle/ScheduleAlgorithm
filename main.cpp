@@ -20,7 +20,7 @@ float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
     int nbPenalty = 0;    //get total number of specialties non fufilled
 
     float travelDistance = 0.0, varianceValue = 0.0;
-    float variance, ecart_type, mean_distance, correlation;      // facteur de correlation (cf. pdf)
+    float variance, ecart_type, mean_distance, correlation;      // Correlation factor (cf. pdf)
 
     for (auto & indiv : population) {
         nbPenalty += indiv->getPenalty();
@@ -428,6 +428,8 @@ int main()
 
     float eval = evaluatePopulation(starting_population);
     cout << "Eval of starting pop is " << eval << endl;
+
+    cout << *starting_population[1] << endl << *starting_population[2] << endl;
      /*
     pair<<<>>> = tournamentSelection(starting_population);
 
