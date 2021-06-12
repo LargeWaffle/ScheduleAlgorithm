@@ -4,7 +4,7 @@
 #include <functional>
 #include<time.h>
 
-#include "instances/instance-formations39.h"
+#include "instances/instance-formations320.h"
 
 #include "Interface.h"
 
@@ -39,7 +39,7 @@ float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
     return (float)(0.5 * (mean_distance + ecart_type) + 0.5 * correlation * nbPenalty);
 }
 
-vector<float> getFormationPosition(int indexFormation)
+vector<float> getFormationPosition(int indexFormation) //return formation center position according to formation's speciality
 {
     if (formation[indexFormation][1] == SPECIALITE_MENUISERIE)
     {
@@ -55,7 +55,7 @@ vector<float> getFormationPosition(int indexFormation)
     }
 }
 
-void fillPopulation(Interface *(&population)[NBR_INTERFACES])
+void fillPopulation(Interface *(&population)[NBR_INTERFACES]) //fill starting population according to instance
 {
     for(int i = 0; i < NBR_INTERFACES; i++)
     {
@@ -68,7 +68,7 @@ void fillPopulation(Interface *(&population)[NBR_INTERFACES])
     }
 }
 
-void fillFormations(Formation *(&form_list)[NBR_FORMATIONS])
+void fillFormations(Formation *(&form_list)[NBR_FORMATIONS]) //fill formations_lists according to instance
 {
     for (int i = 0; i < NBR_FORMATIONS; i++)
     {
@@ -85,7 +85,7 @@ void fillFormations(Formation *(&form_list)[NBR_FORMATIONS])
         form_list[i] = form;
     }
 }
-bool isSolutionFeasible(Interface *(&population)[NBR_INTERFACES])
+bool isSolutionFeasible(Interface *(&population)[NBR_INTERFACES]) // true if all missions have been assigned
 {
     int sum = 0;
     for(Interface *i : population)
@@ -98,17 +98,15 @@ bool isSolutionFeasible(Interface *(&population)[NBR_INTERFACES])
 }
 
 
-bool hasSameCompetence(int indexFormation, int indexInterface)
+inline bool hasSameCompetence(int indexFormation, int indexInterface) //true if interface has required competence for formation
 {
-    int comp_form = formation[indexFormation][2];
+    int competence_form = formation[indexFormation][2];
 
-    bool result = comp_form == 0 ?
+    return competence_form == 0 ?
                   competences_interfaces[indexInterface][0] == 1
                                  : competences_interfaces[indexInterface][1] == 1;
 
-    return result;
 }
-
 
 
 inline bool areRangesOverlapping(int startTime1, int endTime1, int startTime2, int endTime2)
@@ -121,19 +119,20 @@ inline int day(int indexFormation)
     return formations_list[indexFormation]->day;
 }
 
-inline bool isAmplitudeOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation)
+inline bool isAmplitudeOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation) //true if daily hours limit isn't reached
 {
-    if (population[indexInterface]->hoursWorkedPerDay[day(indexFormation)] + (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour))
+    if ((population[indexInterface]->hoursWorkedPerDay[day(indexFormation)] + (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour)) <= 12)
         return true;
     else
         return false;
 }
 
-inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation)
+inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation) //true if weekly hours limits isn't reached
 {
     return population[indexInterface]->hoursWorked + (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour) < 35;
 }
 
+//check if interface's available for a formation, if yes returns true and where to insert the formation in the timetable
 pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES])
 {
     pair <bool, int> result (false, -1);
@@ -191,7 +190,7 @@ auto euclideanDistance(float x1, float x2, float y1, float y2)
 }
 
 
-void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES])
+void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute distance traveled by all the interfaces during a week
 {
     for (auto &currInterface : population)
     {
@@ -217,7 +216,8 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES])
     }
 }
 
-void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES]) {
+void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
+{
     //vector created to keep track of missing formations at the end of greedy
     vector<int> formationIndexes(NBR_FORMATIONS);
     for (int i = 0; i < NBR_FORMATIONS; i++) {
@@ -419,7 +419,7 @@ pair<int, int> getRandomForm(Interface * (&inter))
     uniform_int_distribution<int> day_distribution(1, 6);
     int rd_day = day_distribution(nb_gen);
 
-    uniform_int_distribution<int> form_distribution(0,  inter->time_table[rd_day].size() - 1);
+    uniform_int_distribution<int> form_distribution(0,  int(inter->time_table[rd_day].size() - 1));
     int rd_form = form_distribution(nb_gen);
 
     return {rd_day, rd_form};
@@ -491,6 +491,7 @@ inline void print_population(Interface *(&population)[NBR_INTERFACES])
 
 int main()
 {
+
     cout << "IT45 - Probleme d affectation d employes\n" << endl;
     cout << "Configuration of the problem" << endl;
     cout << "* Number of Interfaces = " << NBR_INTERFACES << endl;
@@ -525,25 +526,15 @@ int main()
 
     float eval = evaluatePopulation(starting_population);
     cout << "Eval of starting pop is " << eval << endl;
-    crossingOperator(starting_population, 1, 2, 21, 32, 0, 0);
+    //crossingOperator(starting_population, 1, 2, 21, 32, 0, 0);
 
-    int index2 = 0;
-    for(auto &i : starting_population)
-    {
-        cout << "Interface " << index2 << endl;
-        i->displayTimeTable();
-        cout << endl;
-        index2 += 1;
-    }
+    //eval = evaluatePopulation(next_population);
+    //cout << "Eval of next pop is " << eval << endl;
+
     //cout << *starting_population[1] << endl << *starting_population[2] << endl;
 
-     /*eval = evaluatePopulation(next_population);
-    cout << "Eval of next pop is " << eval << endl;
-
-    cout << *starting_population[1] << endl << *starting_population[2] << endl;
-
-    for(Interface *i : starting_population)
-        cout << *i << endl;
+    //for(Interface *i : starting_population)
+    //    cout << *i << endl;
 
     //for(Interface *i : next_population)
     //    cout << *i << endl;
