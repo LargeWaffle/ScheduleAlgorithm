@@ -18,20 +18,17 @@ public:
     int comp;   // Required competence
     int indexSpec;   // Required speciality if possible
 
-    float * position;   // Place of the formation
+    vector<float> position;   // Place of the formation
 
     Formation(): id(-1), day(-1), startHour(-1), endHour(-1), comp(-1), indexSpec(-1)
     {
-        position = new float [2];
-        position[0] = position[1] = -1.0;
+        position = {-1,-1};
     }
 
-    Formation(int id, int day, int hDebut, int hFin, int comp, int spec, float * pos):
+    Formation(int id, int day, int hDebut, int hFin, int comp, int spec, vector<float> pos):
             id(id), day(day), startHour(hDebut), endHour(hFin), comp(comp), indexSpec(spec)
     {
-
-        position = new float [2];
-        position = pos;
+        position = {pos[0],pos[1]};
     }
 
     Formation& operator=(Formation &form)
@@ -47,7 +44,6 @@ public:
             comp = form.comp;
             indexSpec = form.indexSpec;
 
-            position = new float [2];
             position = form.position;
 
         }
@@ -56,7 +52,7 @@ public:
 
     ~Formation()
     {
-        delete [] position;
+        //delete [] position;
     }
 
     friend ostream& operator<<(ostream& out_object, Formation& form)
