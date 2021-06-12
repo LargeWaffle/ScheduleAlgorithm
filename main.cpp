@@ -277,6 +277,9 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
     population[indexInterfaceOne]->assigned_missions.insert(population[indexInterfaceOne]->assigned_missions.begin(),indexFormationTwo);
     population[indexInterfaceTwo]->assigned_missions.insert(population[indexInterfaceTwo]->assigned_missions.begin(),indexFormationOne);
 
+    population[indexInterfaceOne]->time_table[dayF1].erase(population[indexInterfaceOne]->time_table[dayF1].begin() + index1);
+    population[indexInterfaceTwo]->time_table[dayF2].erase(population[indexInterfaceTwo]->time_table[dayF2].begin() + index2);
+
     population[indexInterfaceOne]->hoursWorked -= durationFormationOne;
     population[indexInterfaceOne]->hoursWorkedPerDay[dayF1] -= durationFormationOne;
 
@@ -423,7 +426,7 @@ pair<int, int> getRandomForm(Interface * (&inter))
 }
 
 
-bool isSwappable(int indexFirstInterface, int indexSecondInterface, pair<int, int>& firstFormIndexes, pair<int, int>& secondFormIndexes, Interface *(&population)[NBR_INTERFACES])
+tuple <bool, int, int> isSwappable(int indexFirstInterface, int indexSecondInterface, pair<int, int>& firstFormIndexes, pair<int, int>& secondFormIndexes, Interface *(&population)[NBR_INTERFACES])
 {
     Interface * copy_pop[NBR_INTERFACES];
 
@@ -440,11 +443,12 @@ bool isSwappable(int indexFirstInterface, int indexSecondInterface, pair<int, in
     schedule.erase(remove(schedule.begin(), schedule.end(), schedule[secondFormIndexes.second]), schedule.end());
 
     //TODO: Check if interfaces are different in copy_pop
+    auto r1 = isFree(indexFirstInterface, secondFormIndexes.second, copy_pop);
+    auto r2 = isFree(indexSecondInterface, firstFormIndexes.second, copy_pop);
 
-    bool swap = isFree(indexFirstInterface, secondFormIndexes.second, copy_pop).first
-            && isFree(indexSecondInterface, firstFormIndexes.second, copy_pop).first;
+    //bool swap = r1.first && r2.first;
 
-    return swap;
+    return {r1.first && r2.first, r1.second, r2.second};
 }
 
 // add pair<Interface*, Interface*> instead of void if problems occur
@@ -453,7 +457,7 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
     bool swap = false;
     pair<int, int> firstFormIndexes;
     pair<int, int> secondFormIndexes;
-
+    tuple<bool, int, int> result;
     while (!swap)
     {
         Interface * firstInterface = population[indexFirstInterface];
@@ -470,10 +474,12 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
         if (secondFormIndexes.first == -1)
             secondFormIndexes = getRandomForm(secondInterface);
 
-        swap = isSwappable(indexFirstInterface, indexSecondInterface, firstFormIndexes, secondFormIndexes, population);
+        result = isSwappable(indexFirstInterface, indexSecondInterface, firstFormIndexes, secondFormIndexes, population);
+        swap = get<0>(result);
+        //swap = isSwappable(indexFirstInterface, indexSecondInterface, firstFormIndexes, secondFormIndexes, population).get<0>;
     }
 
-    crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second);
+    crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second, get<1>(result), get<2>(result));
 
 }
 
@@ -519,7 +525,16 @@ int main()
 
     float eval = evaluatePopulation(starting_population);
     cout << "Eval of starting pop is " << eval << endl;
+    crossingOperator(starting_population, 1, 2, 21, 32, 0, 0);
 
+    int index2 = 0;
+    for(auto &i : starting_population)
+    {
+        cout << "Interface " << index2 << endl;
+        i->displayTimeTable();
+        cout << endl;
+        index2 += 1;
+    }
     //cout << *starting_population[1] << endl << *starting_population[2] << endl;
 
      /*eval = evaluatePopulation(next_population);
