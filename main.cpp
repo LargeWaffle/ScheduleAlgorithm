@@ -2,6 +2,7 @@
 #include <cmath>
 #include <random>
 #include <functional>
+#include<time.h>
 
 #include "instances/instance-formations39.h"
 
@@ -556,8 +557,10 @@ int main()
             next_population[i] = starting_population[i];
         }
 
-     3. while(nbIteration < limit || score qui stagne)
-     while(nbIteration < limit || ...)
+     3. while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevant
+     double t = clock();
+
+     while(t / CLOCKS_PER_SEC < 60)
      {
         4. next_pop filled grâce à la selection = selection des parents - DONE
         5. Croisement dans next_population
