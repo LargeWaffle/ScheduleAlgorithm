@@ -209,7 +209,7 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES])
                     currInterface->distance += euclideanDistance(currInterface->currentPosition[0], formationPlace[0], currInterface->currentPosition[1], formationPlace[1]);
                     currInterface->currentPosition = formationPlace;
                 }
-                //Distance from last formation to HQ
+                //Distance from last formation to HQ at the end of the day
                 currInterface->distance += euclideanDistance(currInterface->currentPosition[0], coord[0][0], currInterface->currentPosition[1], coord[0][1]);
                 currInterface->currentPosition = {coord[0][0], coord[0][1]};
 
