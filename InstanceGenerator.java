@@ -20,8 +20,8 @@ public class InstanceGenerator {
 //    public static int NBR_APPRENANTS = 20;
 //    public static int NBR_FORMATIONS_PAR_SEMAINE = 4; // max 10 demi-journées par apprenant
 
-    public static int NBR_APPRENANTS = 20*4;
-    public static int NBR_FORMATIONS_PAR_SEMAINE = 4;
+    public static int NBR_APPRENANTS = 8*4;
+    public static int NBR_FORMATIONS_PAR_SEMAINE = 3;
 
     public static int DIMENSION_ZONE_GEOGRAPHIQUE = 200;
 
