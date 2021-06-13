@@ -2,7 +2,7 @@
 #include <cmath>
 #include <random>
 #include <functional>
-#include<time.h>
+#include <time.h>
 
 #include "instances/instance-formations320.h"
 
@@ -335,7 +335,7 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
     pool_length = int(pool.size());
     tournament_pool_length = pool_length / 2;
 
-    vector<Interface *> tournament_pool(tournament_pool_length);
+    vector<Interface *> tournament_pool;
 
     random_device rd;
     mt19937 nb_gen(rd());
@@ -491,7 +491,7 @@ inline void print_population(Interface *(&population)[NBR_INTERFACES])
 
 int main()
 {
-
+    /*
     cout << "IT45 - Probleme d affectation d employes\n" << endl;
     cout << "Configuration of the problem" << endl;
     cout << "* Number of Interfaces = " << NBR_INTERFACES << endl;
@@ -539,11 +539,11 @@ int main()
     //for(Interface *i : next_population)
     //    cout << *i << endl;
 
-    //crossingOperator(starting_population, 1, 2, 21, 32);*/
+    //crossingOperator(starting_population, 1, 2, 21, 32);
 
+    */
 
-
-    /* Main algo
+    // Main algo
     cout << "IT45 - Probleme d affectation d employes\n" << endl;
     cout << "Configuration of the problem" << endl;
     cout << "* Number of Interfaces = " << NBR_INTERFACES << endl;
@@ -554,35 +554,36 @@ int main()
     Interface *starting_population[NBR_INTERFACES];
     Interface *next_population[NBR_INTERFACES];
 
-     1. Init pop - DONE
-    fillPopulation(starting_population);    // Fill starting population
+     //1. Init pop - DONE
+    fillPopulation(starting_population);// Fill starting population
+    fillFormations(formations_list);
     greedyFirstSolution(starting_population);
 
-     2. Eval pop - DONE
+     //2. Eval pop - DONE
     float eval = evaluatePopulation(starting_population);
     cout << "Eval of starting pop is " << eval << endl;
 
-     for (int i = 0; i < NBR_INTERFACES; i++) {
-            next_population[i] = starting_population[i];
-        }
-
-     3. while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevant
+     //3.
+     //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevant
      double t = clock();
 
      while(t / CLOCKS_PER_SEC < 60)
      {
-        4. next_pop filled grâce à la selection = selection des parents - DONE
-        5. Croisement dans next_population
+         for (int i = 0; i < NBR_INTERFACES; i++) {
+             next_population[i] = starting_population[i];
+         }
+        //4. next_pop filled grâce à la selection = selection des parents - DONE
+        //5. Croisement dans next_population
 
         for(int i = 0; i < NBR_INTERFACES / 2; i++){
             pair<int, int> to_cross = tournamentSelection(next_population);
             crossInterfaces(to_cross.first, to_cross.second, next_population);
         }
 
-        7. Evaluer new pop - DONE
+        //7. Evaluer new pop - DONE
         eval = evaluatePopulation(next_population);
 
-        6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
+        //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
 
         for (int i = 0; i < NBR_INTERFACES; i++) {
             starting_population[i] = next_population[i];
@@ -591,8 +592,6 @@ int main()
 
 
      } //FIN WHILE
-
-     */
 
     return 0;
 }
