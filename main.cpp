@@ -151,8 +151,9 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
         } else if (formations_list[indexFormation]->startHour >=
                    population[indexInterface]->time_table[day(indexFormation)][
                            population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour) {
+            //TODO : Segmentation fault here
             result.first = true;
-            result.second = int(population[indexInterface]->time_table[day(indexFormation)].size());
+            result.second = int(population[indexInterface]->time_table[day(indexFormation)].size()); // TODO: pas -1 ?
             return result;
         } else {
             int indexOnDaySchedule = 0;
@@ -314,19 +315,20 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
 
     for(int i = 0; i < NBR_INTERFACES; i++){
         travelDistance += population[i]->distance;
+        int true_index = i;
 
         if (secondPool){
             if (population[i]->competence[0] == 1)
             {
                 pool.push_back(population[i]);
-                indexes.push_back(i);
+                indexes.push_back(true_index);
             }
         }
         else{
             if(population[i]->competence[1] == 1)
             {
                 pool.push_back(population[i]);
-                indexes.push_back(i);
+                indexes.push_back(true_index);
             }
         }
     }
@@ -347,8 +349,9 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
     for (int i = 0; i < tournament_pool_length; i++)
     {
         int random = pool_distribution(nb_gen);
+
         tournament_pool.push_back(pool[random]);
-        tournament_indexes.push_back(random);
+        tournament_indexes.push_back(indexes[random]);
     }
 
     // GET 2 BEST INTERFACES
@@ -622,7 +625,6 @@ int main()
     cout << "* Number of Apprentices = " << NBR_APPRENANTS << endl;
     cout << "* Number of nodes = " << NBR_NODES << endl << endl;
 
-    int nb_iterations = 0, limit = 50; // (?)
     Interface *starting_population[NBR_INTERFACES];
     Interface *next_population[NBR_INTERFACES];
 
@@ -632,6 +634,7 @@ int main()
     greedyFirstSolution(starting_population);
 
     isSolutionFeasible(starting_population);
+
      //2. Eval pop - DONE
     float eval = evaluatePopulation(starting_population);
     cout << "Eval of starting pop is " << eval << endl;
@@ -652,7 +655,7 @@ int main()
      //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevant
      double t = clock();
 
-     while(t / CLOCKS_PER_SEC < 60)
+     while(t / CLOCKS_PER_SEC < 30)
      {
          for (int i = 0; i < NBR_INTERFACES; i++) {
              next_population[i] = starting_population[i];
@@ -665,7 +668,7 @@ int main()
             pair<int, int> to_cross = tournamentSelection(next_population);
             crossInterfaces(to_cross.first, to_cross.second, next_population);
 
-            /*pair<int, int> to_cross = tournamentSelection(next_population);
+            /*to_cross = tournamentSelection(next_population, true);
             crossInterfaces(to_cross.first, to_cross.second, next_population);*/
         }
 
@@ -677,6 +680,8 @@ int main()
         for (int i = 0; i < NBR_INTERFACES; i++) {
             starting_population[i] = next_population[i];
         }
+
+         t = clock();
 
      } //FIN WHILE
 
