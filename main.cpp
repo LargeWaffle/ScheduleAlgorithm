@@ -151,7 +151,7 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
         } else if (formations_list[indexFormation]->startHour >=
                    population[indexInterface]->time_table[day(indexFormation)][
                            population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour) {
-            //TODO : Segmentation fault here
+            //TODO : Segmentation fault here (population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour)) askip
             result.first = true;
             result.second = int(population[indexInterface]->time_table[day(indexFormation)].size()); // TODO: pas -1 ?
             return result;
