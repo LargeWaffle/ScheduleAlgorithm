@@ -32,7 +32,7 @@ public:
         speciality = new int[NBR_SPECIALITES];
 
         vector<Formation*> listFormations;
-        Formation *form = new Formation();
+        auto *form = new Formation();
         listFormations.push_back(form);
 
 
@@ -59,6 +59,30 @@ public:
         }
     }
 
+    Interface(const Interface& indiv)
+    {
+        if (this != &indiv)
+        {
+            competence = new int[2];
+            competence = indiv.competence;
+
+            speciality = new int[NBR_SPECIALITES];
+
+            distance = indiv.distance;
+            fitness = indiv.fitness;
+            hoursWorked = indiv.hoursWorked;
+
+            for (int i = 0; i < NBR_SPECIALITES; i++)
+                speciality[i] = indiv.speciality[i];
+
+            currentPosition = indiv.currentPosition; //HQ position
+            assigned_missions = indiv.assigned_missions;
+            hoursWorkedPerDay = indiv.hoursWorkedPerDay;
+
+            time_table = indiv.time_table;
+        }
+    }
+
     Interface& operator=(const Interface& indiv)
     {
         if (this != &indiv)
@@ -68,11 +92,16 @@ public:
 
             speciality = new int[NBR_SPECIALITES];
 
+            distance = indiv.distance;
+            fitness = indiv.fitness;
+            hoursWorked = indiv.hoursWorked;
+
             for (int i = 0; i < NBR_SPECIALITES; i++)
                 speciality[i] = indiv.speciality[i];
 
             currentPosition = indiv.currentPosition; //HQ position
             assigned_missions = indiv.assigned_missions;
+            hoursWorkedPerDay = indiv.hoursWorkedPerDay;
 
             time_table = indiv.time_table;
         }
