@@ -354,22 +354,22 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
 
     pair<int, int> result;
 
-    bestScore = tournament_pool[1]->evaluateIndividu(mean_distance);
+    bestScore = tournament_pool[1]->getInterfaceEvaluation(mean_distance);
     result.first = tournament_indexes[1];
 
-    secondBestScore = tournament_pool[0]->evaluateIndividu(mean_distance);
+    secondBestScore = tournament_pool[0]->getInterfaceEvaluation(mean_distance);
     result.second = tournament_indexes[0];
 
     if(secondBestScore > bestScore){
-        bestScore = tournament_pool[0]->evaluateIndividu(mean_distance);
+        bestScore = tournament_pool[0]->getInterfaceEvaluation(mean_distance);
         result.first = tournament_indexes[0];
 
-        secondBestScore = tournament_pool[1]->evaluateIndividu(mean_distance);
+        secondBestScore = tournament_pool[1]->getInterfaceEvaluation(mean_distance);
         result.second = tournament_indexes[1];
     }
 
     for (int i = 2; i < tournament_pool_length; i++) {
-        currScore = tournament_pool[i]->evaluateIndividu(mean_distance);
+        currScore = tournament_pool[i]->getInterfaceEvaluation(mean_distance);
 
         if (currScore > bestScore) {
             secondBestScore = bestScore;

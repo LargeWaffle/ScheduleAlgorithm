@@ -153,7 +153,7 @@ public:
         return nbPenalty;
     }
 
-    float evaluateIndividu(float meandistance)
+    float getInterfaceEvaluation(float meandistance)
     {
         int nbSpeciality = (int)assigned_missions.size() - getPenalty();
         int emptyInterface = distance == 0 ? 50 : 0;
