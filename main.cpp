@@ -4,7 +4,7 @@
 #include <functional>
 #include <ctime>
 
-#include "instances/instance-formations96.h"
+#include "instances/instance-formations320.h"
 
 #include "Interface.h"
 
@@ -449,7 +449,7 @@ pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visit
     int rd_day; int rd_form;
     pair<int, int> result{-1, -1};
 
-    while (containsValue(result, visitedIndex) && inter->time_table[result.first][result.second]->id != -1)
+    while (containsValue(result, visitedIndex) || inter->time_table[result.first][result.second]->id != -1)
     {
         uniform_int_distribution<int> day_distribution(1, 6);
         rd_day = day_distribution(nb_gen);
@@ -539,40 +539,76 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
     vector<pair<int, int>> visitedIndexesFirst;
     vector<pair<int, int>> visitedIndexesSecond;
 
-    Interface * firstInterface;
-    Interface * secondInterface;
-    while (!swap)
-    {
-        firstInterface = population[indexFirstInterface];
-        secondInterface = population[indexSecondInterface];
+    Interface * firstInterface = population[indexFirstInterface];
+    Interface * secondInterface = population[indexSecondInterface];
 
+    while (visitedIndexesFirst.size() != firstInterface->assigned_missions.size() && visitedIndexesSecond.size() != secondInterface->assigned_missions.size())
+    {
         firstFormIndexes = getNonSpecialityForm(firstInterface, visitedIndexesFirst);
         secondFormIndexes = getNonSpecialityForm(secondInterface, visitedIndexesSecond);
 
         if (firstFormIndexes.first == -1)
             firstFormIndexes = getRandomForm(firstInterface, visitedIndexesFirst);
 
-
         if (secondFormIndexes.first == -1)
             secondFormIndexes = getRandomForm(secondInterface, visitedIndexesSecond);
-
-        //firstFormIndexes.first = secondFormIndexes.first = 1;
-        //firstFormIndexes.second = secondFormIndexes.second = 0;
-        //result = isSwappable(1,2,firstFormIndexes, secondFormIndexes, population);
-        result = isSwappable(indexFirstInterface, indexSecondInterface, firstFormIndexes, secondFormIndexes, population);
-
-        swap = get<0>(result);
-
-        if (swap)
-            cout << "SWAP" << endl;
-
     }
-    int indexF1 = getIndexFromID(firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->id, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->day, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour);
-    int indexF2 = getIndexFromID(secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->id, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->day, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->startHour, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->endHour);
 
-    crossingOperator(population, indexFirstInterface, indexSecondInterface, indexF1, indexF2, get<1>(result), get<2>(result));
-    //crossingOperator(population, 1, 2, 28, 47, get<1>(result), get<2>(result));
-    //crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second, get<1>(result), get<2>(result));
+    for (int i = 0; i < visitedIndexesFirst.size(); i++)
+    {
+        for (int j = 0; j < visitedIndexesSecond.size(); j++)
+        {
+            //firstFormIndexes.first = secondFormIndexes.first = 1;
+            //firstFormIndexes.second = secondFormIndexes.second = 0;
+            //result = isSwappable(1,2,firstFormIndexes, secondFormIndexes, population);
+
+            result = isSwappable(indexFirstInterface, indexSecondInterface, visitedIndexesFirst[i], visitedIndexesSecond[j], population);
+
+            swap = get<0>(result);
+
+            if (swap)
+            {
+                firstFormIndexes = visitedIndexesFirst[i];
+                secondFormIndexes = visitedIndexesSecond[j];
+                break;
+            }
+        }
+
+        if(swap)
+            break;
+    }
+
+    cout << "DEBUG BEFORE" << endl;
+    cout << *firstInterface << endl;
+    cout << "Second inter" << endl;
+    cout << *secondInterface << endl;
+
+    if (swap)
+    {
+        cout << "swapped" << endl;
+
+        int indexF1 = getIndexFromID(firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->id, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->day, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour);
+        int indexF2 = getIndexFromID(secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->id, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->day, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->startHour, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->endHour);
+
+        //crossingOperator(population, 1, 2, 28, 47, get<1>(result), get<2>(result));
+        //crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second, get<1>(result), get<2>(result));
+
+        crossingOperator(population, indexFirstInterface, indexSecondInterface, indexF1, indexF2, get<1>(result), get<2>(result));
+    }
+    else
+    {
+        cout << "didn't swap" << endl;
+    }
+
+    cout << "DEBUG AFTER" << endl;
+    cout << *firstInterface << endl;
+    cout << "Second inter" << endl;
+    cout << *secondInterface << endl;
+
+    for (int i = 0; i < 8; ++i) {
+        cout << endl;
+    }
+
 }
 
 inline void print_population(Interface *(&population)[NBR_INTERFACES])
@@ -675,25 +711,25 @@ int main()
      while(t / CLOCKS_PER_SEC < 30)
      {
          for (int i = 0; i < NBR_INTERFACES; i++) {
-             next_population[i] = starting_population[i];
+             next_population[i] = new Interface(*starting_population[i]);
          }
         //4. next_pop filled grâce à la selection = selection des parents - DONE
         //5. Croisement dans next_population
 
-        for(int i = 0; i < NBR_INTERFACES / 2; i++){
+        for(int i = 0; i < NBR_INTERFACES; i++){
 
             pair<int, int> to_cross = tournamentSelection(next_population);
 
             //pair<int, int> to_cross{1, 2};
             crossInterfaces(to_cross.first, to_cross.second, next_population);
 
-            /*to_cross = tournamentSelection(next_population, true);
-            crossInterfaces(to_cross.first, to_cross.second, next_population);*/
+            to_cross = tournamentSelection(next_population, true);
+            crossInterfaces(to_cross.first, to_cross.second, next_population);
         }
 
         //7. Evaluer new pop - DONE
         eval = evaluatePopulation(next_population);
-        cout << "New pop eval is : " << endl;
+        cout << "New pop eval is : " << eval << endl;
 
         //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
         for (int i = 0; i < NBR_INTERFACES; i++) {
