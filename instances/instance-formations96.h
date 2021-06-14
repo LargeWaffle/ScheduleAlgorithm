@@ -1,4 +1,4 @@
-#define NBR_INTERFACES        9
+#define NBR_INTERFACES        15
 #define NBR_APPRENANTS        32
 #define NBR_FORMATIONS        96
 #define NBR_CENTRES_FORMATION 5
@@ -19,7 +19,13 @@ int competences_interfaces[NBR_INTERFACES][2]={
     {0,1},
     {1,0},
     {1,0},
-    {0,1}
+    {0,1},
+    {1,0},
+    {1,0},
+    {0,1},
+    {0,1},
+    {0,1},
+    {1,0}
 };
                   
 /* spécialités des interfaces */
@@ -40,6 +46,12 @@ int specialite_interfaces[NBR_INTERFACES][NBR_SPECIALITES]={
     {0,0,1,0,0},
     {0,1,0,0,0},
     {0,0,0,0,0},
+    {0,0,0,0,0},
+    {1,0,0,0,0},
+    {0,1,0,0,0},
+    {0,0,1,0,0},
+    {0,0,0,1,0},
+    {0,0,0,0,1},
     {0,0,0,0,0}
 };
                   

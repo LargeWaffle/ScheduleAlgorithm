@@ -155,7 +155,7 @@ public:
             for(auto& formation : schedule)
             {
                 if(formation->day == day)
-                    cout  << *formation << " | ";
+                    cout  << formation->id << " ~ " << *formation << " | ";
             }
 
             cout << endl;

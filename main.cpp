@@ -4,7 +4,7 @@
 #include <functional>
 #include <ctime>
 
-#include "instances/instance-formations320.h"
+#include "instances/instance-formations8.h"
 
 #include "Interface.h"
 
@@ -137,47 +137,64 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
 {
 
     pair <bool, int> result (false, -1);
+    int day_ = day(indexFormation);
+    int dayScheduleSize = population[indexInterface]->time_table[day_].size();
 
     if(isAmplitudeOutpassed(population, indexInterface, indexFormation) && isWeeklyHoursQuotaOutpassed(population, indexInterface, indexFormation))
     {
-        if (population[indexInterface]->time_table[day(indexFormation)][0]->id == -1) {
-            result.first = true;
-            return result;
-        } else if (formations_list[indexFormation]->endHour <=
-                   population[indexInterface]->time_table[day(indexFormation)][0]->startHour) {
+        if(dayScheduleSize == 0)
+        {
             result.first = true;
             result.second = 0;
             return result;
-        } else if (!population[indexInterface]->time_table[day(indexFormation)][population[indexInterface]->time_table[day(indexFormation)].empty()])
-        {
-            if (formations_list[indexFormation]->startHour >= population[indexInterface]->time_table[day(indexFormation)][population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour)
-            {
-                    //TODO : Segmentation fault here (population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour)) askip
-                    result.first = true;
-                    result.second = int(population[indexInterface]->time_table[day(indexFormation)].size()); // TODO: pas -1 ?
-                    return result;
-            }
         }
+        if (population[indexInterface]->time_table[day_][0]->id == -1)
+        {
+            result.first = true;
+            result.second = 0;
+            return result;
+        } else if (formations_list[indexFormation]->endHour <=
+                   population[indexInterface]->time_table[day_][0]->startHour)
+        {
+            result.first = true;
+            result.second = 0;
+            return result;
+        } else if (formations_list[indexFormation]->startHour >=
+                   population[indexInterface]->time_table[day_][
+                           population[indexInterface]->time_table[day_].size()-1]->endHour)
+        {
+            result.first = true;
+            result.second = int(population[indexInterface]->time_table[day_].size());
+            return result;
 
-        else {
+        }
+        else
+        {
             int indexOnDaySchedule = 0;
-            for (auto &currForm : population[indexInterface]->time_table[day(indexFormation)]) {
-                if (formations_list[indexFormation]->startHour > currForm->endHour) {
-                    if (indexOnDaySchedule != population[indexInterface]->time_table[day(indexFormation)].size() - 1) {
+            for (auto &currForm : population[indexInterface]->time_table[day_])
+            {
+                if (formations_list[indexFormation]->startHour > currForm->endHour)
+                {
+                    if (indexOnDaySchedule != population[indexInterface]->time_table[day_].size() - 1)
+                    {
                         if (formations_list[indexFormation]->endHour <=
-                            population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule +
-                                                                                        1]->startHour) {
+                            population[indexInterface]->time_table[day_][indexOnDaySchedule +
+                                                                                        1]->startHour)
+                        {
                             result.first = true;
                             result.second = indexOnDaySchedule + 1;
                             return result;
                         }
                     }
                 } else if (indexOnDaySchedule !=
-                           population[indexInterface]->time_table[day(indexFormation)].size() - 1) {
-                    if (formations_list[indexFormation]->startHour == currForm->endHour) {
+                           population[indexInterface]->time_table[day_].size() - 1)
+                {
+                    if (formations_list[indexFormation]->startHour == currForm->endHour)
+                    {
                         if (formations_list[indexFormation]->endHour <=
-                            population[indexInterface]->time_table[day(indexFormation)][indexOnDaySchedule +
-                                                                                        1]->startHour) {
+                            population[indexInterface]->time_table[day_][indexOnDaySchedule +
+                                                                                        1]->startHour)
+                        {
                             result.first = true;
                             result.second = indexOnDaySchedule + 1;
                             return result;
@@ -242,7 +259,7 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                 if (result.first)
                 {
                     //we have to place the formation at the right place on the day
-                    if (result.second == -1) //replace first null formation
+                    if (result.second == 0) //replace first null formation
                     {
                         population[indexInterface]->time_table[day_].at(0) = formations_list[indexFormation];
                     }
@@ -592,8 +609,8 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
 
         //crossingOperator(population, 1, 2, 28, 47, get<1>(result), get<2>(result));
         //crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second, get<1>(result), get<2>(result));
-
-        crossingOperator(population, indexFirstInterface, indexSecondInterface, indexF1, indexF2, get<1>(result), get<2>(result));
+        if(indexF1 != -1 && indexF2 != -1)
+            crossingOperator(population, indexFirstInterface, indexSecondInterface, indexF1, indexF2, get<1>(result), get<2>(result));
     }
     else
     {
@@ -695,20 +712,21 @@ int main()
     int index = 0;
     for( auto &i : starting_population)
     {
-        if (i->competence[0] == 0 && i->competence[1]== 1)
-        {
+        //if (i->competence[0] == 0 && i->competence[1]== 1)
+        //{
             cout << "interface : " << index << endl;
             i->displayTimeTable();
             index+=1;
-        }
+        //}
 
     }
 
      //3.
-     //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevant
+     //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevantdouble t = clock();
      double t = clock();
-
-     while(t / CLOCKS_PER_SEC < 30)
+    bool stop = false;
+     //while(t / CLOCKS_PER_SEC < 30)
+     while(!stop)
      {
          for (int i = 0; i < NBR_INTERFACES; i++) {
              next_population[i] = new Interface(*starting_population[i]);
@@ -717,7 +735,7 @@ int main()
         //5. Croisement dans next_population
 
         for(int i = 0; i < NBR_INTERFACES; i++){
-
+            cout << i << endl;
             pair<int, int> to_cross = tournamentSelection(next_population);
 
             //pair<int, int> to_cross{1, 2};
@@ -735,13 +753,23 @@ int main()
         for (int i = 0; i < NBR_INTERFACES; i++) {
             starting_population[i] = next_population[i];
         }
-
-         t = clock();
+        stop = true;
+         //t = clock();
 
      } //FIN WHILE
 
      cout << "Time out !" << endl;
+    int index2 = 0;
+    for( auto &i : starting_population)
+    {
+        //if (i->competence[0] == 0 && i->competence[1]== 1)
+        //{
+        cout << "interface : " << index2 << endl;
+        i->displayTimeTable();
+        index2+=1;
+        //}
 
+    }
     return 0;
 }
 
