@@ -303,6 +303,7 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
 
     population[indexInterfaceTwo]->time_table[dayF1].insert(
             population[indexInterfaceTwo]->time_table[dayF1].begin() + index2, formations_list[indexFormationOne]);
+
 }
 
 pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], bool secondPool = false) {
@@ -538,10 +539,12 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
     vector<pair<int, int>> visitedIndexesFirst;
     vector<pair<int, int>> visitedIndexesSecond;
 
+    Interface * firstInterface;
+    Interface * secondInterface;
     while (!swap)
     {
-        Interface * firstInterface = population[indexFirstInterface];
-        Interface * secondInterface = population[indexSecondInterface];
+        firstInterface = population[indexFirstInterface];
+        secondInterface = population[indexSecondInterface];
 
         firstFormIndexes = getNonSpecialityForm(firstInterface, visitedIndexesFirst);
         secondFormIndexes = getNonSpecialityForm(secondInterface, visitedIndexesSecond);
@@ -553,15 +556,23 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
         if (secondFormIndexes.first == -1)
             secondFormIndexes = getRandomForm(secondInterface, visitedIndexesSecond);
 
+        //firstFormIndexes.first = secondFormIndexes.first = 1;
+        //firstFormIndexes.second = secondFormIndexes.second = 0;
+        //result = isSwappable(1,2,firstFormIndexes, secondFormIndexes, population);
         result = isSwappable(indexFirstInterface, indexSecondInterface, firstFormIndexes, secondFormIndexes, population);
+
         swap = get<0>(result);
-        //swap = isSwappable(indexFirstInterface, indexSecondInterface, firstFormIndexes, secondFormIndexes, population).get<0>;
-        cout << "SWAP" << swap << endl;
+
+        if (swap)
+            cout << "SWAP" << endl;
 
     }
+    int indexF1 = getIndexFromID(firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->id, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->day, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour);
+    int indexF2 = getIndexFromID(secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->id, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->day, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->startHour, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->endHour);
 
-    crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second, get<1>(result), get<2>(result));
-
+    crossingOperator(population, indexFirstInterface, indexSecondInterface, indexF1, indexF2, get<1>(result), get<2>(result));
+    //crossingOperator(population, 1, 2, 28, 47, get<1>(result), get<2>(result));
+    //crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second, get<1>(result), get<2>(result));
 }
 
 inline void print_population(Interface *(&population)[NBR_INTERFACES])
