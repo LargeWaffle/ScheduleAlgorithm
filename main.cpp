@@ -4,7 +4,7 @@
 #include <functional>
 #include <ctime>
 
-#include "instances/instance-formations8.h"
+#include "instances/instance-formations48.h"
 
 #include "Interface.h"
 
@@ -335,10 +335,30 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
 
     // POOL FILLING
 
-    for(int i = 0; i < NBR_INTERFACES; i++){
-        travelDistance += population[i]->distance;
-        int true_index = i;
+    if (NBR_INTERFACES < 3)
+    {
+        for(int i = 0; i < NBR_INTERFACES; i++){
+            travelDistance += population[i]->distance;
+            int true_index = i;
 
+            if (secondPool){
+                if (population[i]->competence[0] == 1)
+                {
+                    pool.push_back(population[i]);
+                    indexes.push_back(true_index);
+                }
+            }
+            else{
+                if(population[i]->competence[1] == 1)
+                {
+                    pool.push_back(population[i]);
+                    indexes.push_back(true_index);
+                }
+            }
+        }
+    }
+    else
+    {
         if (secondPool){
             if (population[i]->competence[0] == 1)
             {
