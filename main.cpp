@@ -4,7 +4,7 @@
 #include <functional>
 #include <ctime>
 
-#include "instances/instance-formations8.h"
+#include "instances/instance-formations320.h"
 
 #include "Interface.h"
 
@@ -288,6 +288,7 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 // Crossover Operator on two interfaces given two formation slots
 void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfaceOne, int indexInterfaceTwo, int indexFormationOne, int indexFormationTwo, int index1, int index2)
 {
+    cout << "hello" << endl;
     int durationFormationOne = formations_list[indexFormationOne]->endHour - formations_list[indexFormationOne]->startHour;
     int durationFormationTwo = formations_list[indexFormationTwo]->endHour - formations_list[indexFormationTwo]->startHour;
     int dayF1 = day(indexFormationOne);
@@ -558,14 +559,18 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
 
     Interface * firstInterface = population[indexFirstInterface];
     Interface * secondInterface = population[indexSecondInterface];
-
+    cout << "after declarations" << endl;
     while (visitedIndexesFirst.size() != firstInterface->assigned_missions.size() && visitedIndexesSecond.size() != secondInterface->assigned_missions.size())
     {
         firstFormIndexes = getNonSpecialityForm(firstInterface, visitedIndexesFirst);
+        cout << "after firstformindexes" << endl;
         secondFormIndexes = getNonSpecialityForm(secondInterface, visitedIndexesSecond);
-
+        cout << "after twoformindexes" << endl;
         if (firstFormIndexes.first == -1)
+            cout << "before random" << endl;
             firstFormIndexes = getRandomForm(firstInterface, visitedIndexesFirst);
+            cout << "before random" << endl;
+
 
         if (secondFormIndexes.first == -1)
             secondFormIndexes = getRandomForm(secondInterface, visitedIndexesSecond);
@@ -594,11 +599,11 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
         if(swap)
             break;
     }
-
+    /*
     cout << "DEBUG BEFORE" << endl;
     cout << *firstInterface << endl;
     cout << "Second inter" << endl;
-    cout << *secondInterface << endl;
+    cout << *secondInterface << endl;*/
 
     if (swap)
     {
@@ -606,10 +611,11 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
 
         int indexF1 = getIndexFromID(firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->id, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->day, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour);
         int indexF2 = getIndexFromID(secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->id, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->day, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->startHour, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->endHour);
-
+        cout << "coucou" << endl;
         //crossingOperator(population, 1, 2, 28, 47, get<1>(result), get<2>(result));
         //crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second, get<1>(result), get<2>(result));
         if(indexF1 != -1 && indexF2 != -1)
+            cout << "different from -1" << endl;
             crossingOperator(population, indexFirstInterface, indexSecondInterface, indexF1, indexF2, get<1>(result), get<2>(result));
     }
     else
@@ -737,12 +743,14 @@ int main()
         for(int i = 0; i < NBR_INTERFACES; i++){
             cout << i << endl;
             pair<int, int> to_cross = tournamentSelection(next_population);
-
+            cout << "after to cross" << endl;
             //pair<int, int> to_cross{1, 2};
             crossInterfaces(to_cross.first, to_cross.second, next_population);
-
+            cout << "after crossInterfaces1" << endl;
             to_cross = tournamentSelection(next_population, true);
+            cout << "after to cross2" << endl;
             crossInterfaces(to_cross.first, to_cross.second, next_population);
+            cout << "after crossInterfaces2" << endl;
         }
 
         //7. Evaluer new pop - DONE
