@@ -419,8 +419,7 @@ pair<int, int> getNonSpecialityForm(Interface * (&inter), vector<pair<int, int>>
     {
         for (int j = 0; j < inter->time_table[i].size(); j++)
         {
-
-            if(inter->speciality[inter->time_table[i][j]->indexSpec] == 0)
+            if(inter->time_table[i][j]->id != -1 && inter->speciality[inter->time_table[i][j]->indexSpec] == 0 )
             {
                 result.first = i; result.second = j;
 
@@ -449,7 +448,7 @@ pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visit
     int rd_day; int rd_form;
     pair<int, int> result{-1, -1};
 
-    while (containsValue(result, visitedIndex))
+    while (containsValue(result, visitedIndex) && inter->time_table[result.first][result.second]->id != -1)
     {
         uniform_int_distribution<int> day_distribution(1, 6);
         rd_day = day_distribution(nb_gen);
@@ -555,6 +554,7 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
         result = isSwappable(indexFirstInterface, indexSecondInterface, firstFormIndexes, secondFormIndexes, population);
         swap = get<0>(result);
         //swap = isSwappable(indexFirstInterface, indexSecondInterface, firstFormIndexes, secondFormIndexes, population).get<0>;
+        cout << "SWAP" << swap << endl;
 
     }
 
