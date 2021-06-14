@@ -493,12 +493,14 @@ tuple <bool, int, int> isSwappable(int indexFirstInterface, int indexSecondInter
     Interface * secondInter = copy_pop[indexSecondInterface];
 
     vector<Formation *> schedule = firstInter->time_table[firstFormIndexes.first];
-
+    // TODO : ici schedule est vide car firstInter->time_table[3] est vide aussi
+    // TODO :
     int durationFormationOne = firstInter->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour - firstInter->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour;
     firstInter->hoursWorked -= durationFormationOne;
     firstInter->hoursWorkedPerDay[day(firstFormIndexes.second)] -= durationFormationOne;
+    int test = schedule[firstFormIndexes.second]->id;
 
-    int index1 = getIndexFromID(schedule[secondFormIndexes.second]->id, schedule[secondFormIndexes.second]->day, schedule[secondFormIndexes.second]->startHour, schedule[secondFormIndexes.second]->endHour);
+    int index1 = getIndexFromID(schedule[firstFormIndexes.second]->id, schedule[firstFormIndexes.second]->day, schedule[firstFormIndexes.second]->startHour, schedule[firstFormIndexes.second]->endHour);
 
     schedule.erase(remove(schedule.begin(), schedule.end(), schedule[firstFormIndexes.second]), schedule.end());
 
@@ -512,7 +514,7 @@ tuple <bool, int, int> isSwappable(int indexFirstInterface, int indexSecondInter
     secondInter->hoursWorked -= durationFormationTwo;
     secondInter->hoursWorkedPerDay[day(secondFormIndexes.second)] -= durationFormationTwo;
 
-    int index2 = getIndexFromID(schedule[firstFormIndexes.second]->id, schedule[firstFormIndexes.second]->day, schedule[firstFormIndexes.second]->startHour, schedule[firstFormIndexes.second]->endHour);
+    int index2 = getIndexFromID(schedule[secondFormIndexes.second]->id, schedule[secondFormIndexes.second]->day, schedule[secondFormIndexes.second]->startHour, schedule[secondFormIndexes.second]->endHour);
 
     schedule.erase(remove(schedule.begin(), schedule.end(), schedule[secondFormIndexes.second]), schedule.end());
 
@@ -621,7 +623,7 @@ int main()
     //crossingOperator(starting_population, 1, 2, 21, 32);
 
     */
-
+    int test = getIndexFromID(19,4,9,11);
     // Main algo
     cout << "IT45 - Probleme d affectation d employes\n" << endl;
     cout << "Configuration of the problem" << endl;
@@ -670,6 +672,8 @@ int main()
         for(int i = 0; i < NBR_INTERFACES / 2; i++){
 
             pair<int, int> to_cross = tournamentSelection(next_population);
+
+            //pair<int, int> to_cross{1, 2};
             crossInterfaces(to_cross.first, to_cross.second, next_population);
 
             /*to_cross = tournamentSelection(next_population, true);
