@@ -323,6 +323,35 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
             population[indexInterfaceTwo]->time_table[dayF1].begin() + index2, formations_list[indexFormationOne]);
 
 }
+bool containsValue(pair<int, int> value, vector<pair<int, int>>& visitedIndex)
+{
+    bool found = false;
+
+    for (auto & elem : visitedIndex)
+
+        if (value == elem)
+        {
+            found = true;
+            break;
+        }
+
+    return found;
+}
+
+bool containsValue(int value, vector<int>& visitedIndex)
+{
+    bool found = false;
+
+    for (auto & elem : visitedIndex)
+
+        if (value == elem)
+        {
+            found = true;
+            break;
+        }
+
+    return found;
+}
 
 pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], bool secondPool = false) {
 
@@ -356,11 +385,13 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
         }
     }
 
+
     mean_distance = getMean(travelDistance);
 
     pool_length = int(pool.size());
-    tournament_pool_length = pool_length / 2;
+    tournament_pool_length = ceil(0.7 * pool_length);
 
+    vector<int> visitedValues;
     vector<Interface *> tournament_pool;
 
     random_device rd;
@@ -369,12 +400,18 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
 
     // SELECT PARTICIPANTS
 
-    for (int i = 0; i < tournament_pool_length; i++)
+    while(visitedValues.size() != tournament_pool_length)
     {
         int random = pool_distribution(nb_gen);
 
-        tournament_pool.push_back(pool[random]);
-        tournament_indexes.push_back(indexes[random]);
+        if (!containsValue(random, visitedValues))
+        {
+            visitedValues.push_back(random);
+
+            tournament_pool.push_back(pool[random]);
+            tournament_indexes.push_back(indexes[random]);
+        }
+
     }
 
     // GET 2 BEST INTERFACES
@@ -412,21 +449,6 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
     }
 
     return result;
-}
-
-bool containsValue(pair<int, int> value, vector<pair<int, int>>& visitedIndex)
-{
-    bool found = false;
-
-    for (auto & elem : visitedIndex)
-
-        if (value == elem)
-        {
-            found = true;
-            break;
-        }
-
-    return found;
 }
 
 pair<int, int> getNonSpecialityForm(Interface * (&inter), vector<pair<int, int>>& visitedIndex)
@@ -566,14 +588,19 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
         cout << "after firstformindexes" << endl;
         secondFormIndexes = getNonSpecialityForm(secondInterface, visitedIndexesSecond);
         cout << "after twoformindexes" << endl;
+
         if (firstFormIndexes.first == -1)
+        {
             cout << "before random" << endl;
             firstFormIndexes = getRandomForm(firstInterface, visitedIndexesFirst);
             cout << "before random" << endl;
+        }
 
 
         if (secondFormIndexes.first == -1)
+        {
             secondFormIndexes = getRandomForm(secondInterface, visitedIndexesSecond);
+        }
     }
 
     for (int i = 0; i < visitedIndexesFirst.size(); i++)
@@ -615,8 +642,10 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
         //crossingOperator(population, 1, 2, 28, 47, get<1>(result), get<2>(result));
         //crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second, get<1>(result), get<2>(result));
         if(indexF1 != -1 && indexF2 != -1)
+        {
             cout << "different from -1" << endl;
             crossingOperator(population, indexFirstInterface, indexSecondInterface, indexF1, indexF2, get<1>(result), get<2>(result));
+        }
     }
     else
     {
@@ -729,7 +758,8 @@ int main()
 
      //3.
      //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevantdouble t = clock();
-     double t = clock();
+     //
+     clock_t t = clock();
     bool stop = false;
      //while(t / CLOCKS_PER_SEC < 30)
      while(!stop)
