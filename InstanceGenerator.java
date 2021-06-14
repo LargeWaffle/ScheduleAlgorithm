@@ -28,7 +28,7 @@ public class InstanceGenerator {
     public static int NBR_INTERFACES = (int) (NBR_APPRENANTS/4 * 1.2);
     public static int NBR_FORMATIONS = NBR_APPRENANTS * NBR_FORMATIONS_PAR_SEMAINE;
 
-    public static String FILENAME = "instance-formations.h";
+    public static String FILENAME = "instance-formations" + NBR_FORMATIONS + ".h";
 
     public static int NBR_COMPETENCES = 2;
     public static String NOMS_COMPETENCES[] = {

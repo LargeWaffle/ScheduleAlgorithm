@@ -693,6 +693,8 @@ int main()
 
      } //FIN WHILE
 
+     cout << "Time out !" << endl;
+
     return 0;
 }
 
