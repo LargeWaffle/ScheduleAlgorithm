@@ -148,14 +148,18 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
             result.first = true;
             result.second = 0;
             return result;
-        } else if (formations_list[indexFormation]->startHour >=
-                   population[indexInterface]->time_table[day(indexFormation)][
-                           population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour) {
-            //TODO : Segmentation fault here (population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour)) askip
-            result.first = true;
-            result.second = int(population[indexInterface]->time_table[day(indexFormation)].size()); // TODO: pas -1 ?
-            return result;
-        } else {
+        } else if (!population[indexInterface]->time_table[day(indexFormation)][population[indexInterface]->time_table[day(indexFormation)].empty()])
+        {
+            if (formations_list[indexFormation]->startHour >= population[indexInterface]->time_table[day(indexFormation)][population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour)
+            {
+                    //TODO : Segmentation fault here (population[indexInterface]->time_table[day(indexFormation)].size() - 1]->endHour)) askip
+                    result.first = true;
+                    result.second = int(population[indexInterface]->time_table[day(indexFormation)].size()); // TODO: pas -1 ?
+                    return result;
+            }
+        }
+
+        else {
             int indexOnDaySchedule = 0;
             for (auto &currForm : population[indexInterface]->time_table[day(indexFormation)]) {
                 if (formations_list[indexFormation]->startHour > currForm->endHour) {
