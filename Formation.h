@@ -20,7 +20,7 @@ public:
 
     vector<float> position;   // Place of the formation
 
-    Formation(): id(-1), day(-1), startHour(-1), endHour(-1), comp(-1), indexSpec(-1)
+    Formation(): id(-1), day(-1), startHour(0), endHour(0), comp(-1), indexSpec(-1)
     {
         position = {-1,-1};
     }

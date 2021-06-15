@@ -4,7 +4,7 @@
 #include <functional>
 #include <ctime>
 
-#include "instances/instance-formations320.h"
+#include "instances/instance-formations96.h"
 
 #include "Interface.h"
 
@@ -212,9 +212,18 @@ auto euclideanDistance(float x1, float x2, float y1, float y2)
     return float(sqrt(pow(x2 - x1, 2.0)+pow(y2 - y1,2.0)));
 }
 
+void resetDistance(Interface *(&population)[NBR_INTERFACES])
+{
+    for (auto &currInterface : population)
+    {
+        currInterface->distance = 0;
+    }
+}
 
 void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute distance traveled by all the interfaces during a week
 {
+    resetDistance(population);
+
     for (auto &currInterface : population)
     {
         for (auto &timetable : currInterface->time_table)
@@ -316,6 +325,8 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
     population[indexInterfaceTwo]->hoursWorked += durationFormationOne;
     population[indexInterfaceTwo]->hoursWorkedPerDay[dayF1] += durationFormationOne;
 
+    cout <<"before insertion" << endl;
+
     population[indexInterfaceOne]->time_table[dayF2].insert(
             population[indexInterfaceOne]->time_table[dayF2].begin() + index1, formations_list[indexFormationTwo]);
 
@@ -358,8 +369,9 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
 
     mean_distance = getMean(travelDistance);
 
+
     pool_length = int(pool.size());
-    tournament_pool_length = pool_length / 2;
+    tournament_pool_length = ceil(0.7 * pool_length);
 
     vector<Interface *> tournament_pool;
 
@@ -466,18 +478,19 @@ pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visit
 
     int rd_day; int rd_form;
     pair<int, int> result{-1, -1};
-
+    cout << "before while" << endl;
     while (containsValue(result, visitedIndex) || inter->time_table[result.first][result.second]->id != -1)
     {
+        cout << "in while" << endl;
         uniform_int_distribution<int> day_distribution(1, 6);
         rd_day = day_distribution(nb_gen);
-
+        cout << rd_day << endl;
         uniform_int_distribution<int> form_distribution(0,  int(inter->time_table[rd_day].size() - 1));
         rd_form = form_distribution(nb_gen);
 
         result.first = rd_day, result.second = rd_form;
     }
-
+    cout << "left while" << endl;
     visitedIndex.push_back(result);
 
     return result;
@@ -567,13 +580,21 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
         secondFormIndexes = getNonSpecialityForm(secondInterface, visitedIndexesSecond);
         cout << "after twoformindexes" << endl;
         if (firstFormIndexes.first == -1)
+        {
             cout << "before random" << endl;
             firstFormIndexes = getRandomForm(firstInterface, visitedIndexesFirst);
-            cout << "before random" << endl;
+            cout << "after random" << endl;
+        }
+
 
 
         if (secondFormIndexes.first == -1)
+        {
+            cout << "before random" << endl;
             secondFormIndexes = getRandomForm(secondInterface, visitedIndexesSecond);
+            cout << "before random" << endl;
+        }
+
     }
 
     for (int i = 0; i < visitedIndexesFirst.size(); i++)
@@ -585,7 +606,7 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
             //result = isSwappable(1,2,firstFormIndexes, secondFormIndexes, population);
 
             result = isSwappable(indexFirstInterface, indexSecondInterface, visitedIndexesFirst[i], visitedIndexesSecond[j], population);
-
+            cout << "after is_swappable" << endl;
             swap = get<0>(result);
 
             if (swap)
@@ -638,6 +659,94 @@ inline void print_population(Interface *(&population)[NBR_INTERFACES])
 {
     for(Interface *i : population)
         cout << *i << endl;
+}
+
+tuple<int, int> getExtremumInterface(Interface *(&population)[NBR_INTERFACES])
+{
+    int max,min,indexMax, indexMin;
+    max = indexMax = indexMin = -1;
+    min = 999;
+
+    for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
+    {
+        cout << population[indexInterface]->hoursWorked << endl;
+        if (population[indexInterface]->hoursWorked > max)
+        {
+            max = population[indexInterface]->hoursWorked;
+            indexMax = indexInterface;
+        }
+        else if(population[indexInterface]->hoursWorked < min)
+        {
+            min = population[indexInterface]->hoursWorked;
+            indexMin = indexInterface;
+        }
+    }
+    return {indexMax, indexMin};
+}
+
+tuple<int, int> getExtremumDays(Interface *(&population)[NBR_INTERFACES], int indexBusiestInterface, int indexLeastBusyInterface)
+{
+    int max,min,indexMax, indexMin;
+    max = indexMax = indexMin = -1;
+    min = 999;
+
+    for(int k = 0; k<5; k++)
+    {
+        if(population[indexBusiestInterface]->hoursWorkedPerDay[k] > max)
+        {
+            max = population[indexBusiestInterface]->hoursWorkedPerDay[k];
+            indexMax = k;
+        }
+        else if(population[indexBusiestInterface]->hoursWorkedPerDay[k] < min)
+        {
+            min = population[indexBusiestInterface]->hoursWorkedPerDay[k];
+            indexMin = k;
+        }
+    }
+    return {indexMax, indexMin};
+}
+
+void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
+{
+
+
+        auto extremumInterfaces = getExtremumInterface(population);
+        auto extremumDays = getExtremumDays(population, get<0>(extremumInterfaces), get<1>(extremumInterfaces));
+        int indexBusiest = get<0>(extremumInterfaces);
+        int indexLeastBusy = get<1>(extremumInterfaces);
+        int busiestDay = get<0>(extremumDays);
+        
+
+        Interface * busiestInterface = population[indexBusiest];
+        for(int k = 0; k < busiestInterface->time_table[].size(); k+=1)
+        {
+            Formation * currFormation = population[indexBusiest]->time_table[indexBusiest][k];
+            int id = currFormation->id;
+            int indexForm = getIndexFromID(currFormation->id, currFormation->day, currFormation->startHour, currFormation->endHour);
+
+            //we check if the least busy interface is free
+            auto result = isFree(indexLeastBusy, indexForm, population);
+            cout << "isresult" << endl;
+            if (result.first)
+            {
+                int durationFormation = formations_list[indexForm]->endHour - formations_list[indexForm]->startHour;
+
+                busiestInterface->assigned_missions.erase(remove(population[indexBusiest]->assigned_missions.begin(), population[indexBusiest]->assigned_missions.end(), indexForm), population[indexBusiest]->assigned_missions.end());
+                busiestInterface->time_table[currFormation->day].erase(busiestInterface->time_table[currFormation->day].begin() + k);
+                busiestInterface->hoursWorked -= durationFormation;
+                busiestInterface->hoursWorkedPerDay[currFormation->day] -= durationFormation;
+
+                population[indexLeastBusy]->assigned_missions.insert(population[indexLeastBusy]->assigned_missions.begin(),indexForm);
+                population[indexLeastBusy]->hoursWorked += durationFormation;
+                population[indexLeastBusy]->hoursWorkedPerDay[currFormation->day] += durationFormation;
+                population[indexLeastBusy]->time_table[currFormation->day].insert(
+                        population[indexLeastBusy]->time_table[currFormation->day].begin() +
+                        result.second, formations_list[indexForm]);
+                cout << "balance occured" << endl;
+
+            }
+
+        }
 }
 
 int main()
@@ -693,7 +802,7 @@ int main()
     //crossingOperator(starting_population, 1, 2, 21, 32);
 
     */
-    int test = getIndexFromID(19,4,9,11);
+    //int test = getIndexFromID(19,4,9,11);
     // Main algo
     cout << "IT45 - Probleme d affectation d employes\n" << endl;
     cout << "Configuration of the problem" << endl;
@@ -703,13 +812,17 @@ int main()
 
     Interface *starting_population[NBR_INTERFACES];
     Interface *next_population[NBR_INTERFACES];
-
+    cout << "after declaration" << endl;
      //1. Init pop - DONE
     fillPopulation(starting_population);// Fill starting population
+    cout << "after fillpop" << endl;
     fillFormations(formations_list);
+    cout << "after fillform" << endl;
     greedyFirstSolution(starting_population);
+    cout << "after greedy" << endl;
 
     isSolutionFeasible(starting_population);
+    cout << "after isfeasible" << endl;
 
      //2. Eval pop - DONE
     float eval = evaluatePopulation(starting_population);
@@ -718,15 +831,29 @@ int main()
     int index = 0;
     for( auto &i : starting_population)
     {
-        //if (i->competence[0] == 0 && i->competence[1]== 1)
-        //{
-            cout << "interface : " << index << endl;
-            i->displayTimeTable();
-            index+=1;
-        //}
-
+        cout << "interface : " << index << endl;
+        i->displayTimeTable();
+        index+=1;
     }
 
+    for (int times = 0; times < 100; times+=1)
+    {
+        balancingPopulation(starting_population);
+    }
+
+    updateInterfaceDistance(starting_population);
+    float eval2 = evaluatePopulation(starting_population);
+    cout << "Eval of balanced pop is " << eval2 << endl;
+
+    int index2 = 0;
+    for( auto &i : starting_population)
+    {
+        cout << "interface : " << index2 << endl;
+        i->displayTimeTable();
+        index2+=1;
+    }
+
+    /*
      //3.
      //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevantdouble t = clock();
      double t = clock();
@@ -777,7 +904,7 @@ int main()
         index2+=1;
         //}
 
-    }
+    }*/
     return 0;
 }
 
