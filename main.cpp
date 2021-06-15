@@ -5,7 +5,6 @@
 #include <ctime>
 
 #include "instances/instance-formations96.h"
-
 #include "Interface.h"
 
 using namespace std;
@@ -43,17 +42,16 @@ float evaluatePopulation(Interface *(&population)[NBR_INTERFACES])
 
 vector<float> getFormationPosition(int indexFormation) //return formation center position according to formation's speciality
 {
-    if (formation[indexFormation][1] == SPECIALITE_MENUISERIE)
-    {
+    if (formation[indexFormation][1] == SPECIALITE_MENUISERIE) {
         return {coord[1][0], coord[1][1]};
-    }
-    else if (formation[indexFormation][1] == SPECIALITE_ELECTRICITE)
-    {
+    } else if (formation[indexFormation][1] == SPECIALITE_ELECTRICITE) {
         return {coord[2][0], coord[2][1]};
-    }
-    else
-    {
+    } else if (formation[indexFormation][1] == SPECIALITE_MECANIQUE) {
         return {coord[3][0], coord[3][1]};
+    } else if (formation[indexFormation][1] == SPECIALITE_INFORMATIQUE) {
+        return {coord[4][0], coord[4][1]};
+    } else if (formation[indexFormation][1] == SPECIALITE_CUISINE) {
+        return {coord[5][0], coord[5][1]};
     }
 }
 
@@ -61,7 +59,7 @@ void fillPopulation(Interface *(&population)[NBR_INTERFACES]) //fill starting po
 {
     for(int i = 0; i < NBR_INTERFACES; i++)
     {
-        auto *intervenant = new Interface();
+        auto *intervenant = new Interface(); //we create a new instance of class interface each time
 
         intervenant->competence = competences_interfaces[i];
         intervenant->speciality = specialite_interfaces[i];
@@ -74,7 +72,7 @@ void fillFormations(Formation *(&form_list)[NBR_FORMATIONS]) //fill formations_l
 {
     for (int i = 0; i < NBR_FORMATIONS; i++)
     {
-        auto *form = new Formation();
+        auto *form = new Formation(); //we create a new instance of class formation each time
 
         form->id = formation[i][0];
         form->indexSpec = formation[i][1];
@@ -87,15 +85,17 @@ void fillFormations(Formation *(&form_list)[NBR_FORMATIONS]) //fill formations_l
         form_list[i] = form;
     }
 }
+
 bool isSolutionFeasible(Interface *(&population)[NBR_INTERFACES]) // true if all missions have been assigned
 {
     int sum = 0;
     for(Interface *i : population)
     {
-        sum += int(i->assigned_missions.size());
+        sum += int(i->assigned_missions.size()); //we sum all the missions we've assigned
     }
-    int difference  = int(sum - ((sizeof(formation)/sizeof(*formation))));
+    int difference  = int(sum - ((sizeof(formation)/sizeof(*formation)))); //diffe
     cout << abs(difference) << " formations missing" << endl;
+
     return sum == ((sizeof(formation)/sizeof(*formation))); // true if we assigned all the missions false otherwise
 }
 
@@ -116,18 +116,16 @@ inline bool areRangesOverlapping(int startTime1, int endTime1, int startTime2, i
     return (endTime1 <= startTime2) || (endTime2 <= startTime1);
 }
 
-inline int day(int indexFormation)
+inline int day(int indexFormation) //return the day of the given formation
 {
     return formations_list[indexFormation]->day;
 }
 
-inline bool isAmplitudeOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation) //true if daily hours limit isn't reached
+inline bool isAmplitudeOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation) //true if daily hours limit (12h) isn't reached
 {
-    if ((population[indexInterface]->hoursWorkedPerDay[day(indexFormation)] + (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour)) <= 12)
-        return true;
-    else
-        return false;
+    return (population[indexInterface]->hoursWorkedPerDay[day(indexFormation)] + (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour)) <= 12;
 }
+
 
 inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation) //true if weekly hours limits isn't reached
 {
@@ -140,7 +138,7 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
 
     pair <bool, int> result (false, -1);
     int day_ = day(indexFormation);
-    int dayScheduleSize = population[indexInterface]->time_table[day_].size();
+    int dayScheduleSize = int(population[indexInterface]->time_table[day_].size());
 
     if(isAmplitudeOutpassed(population, indexInterface, indexFormation) && isWeeklyHoursQuotaOutpassed(population, indexInterface, indexFormation))
     {
@@ -436,13 +434,13 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], vec
             }
 
 
-            if ((containsValue(result.first, visitedInterfaces) || containsValue(result.second, visitedInterfaces)) && competencePool.size() > 2)
+            if ((!containsValue(result.first, visitedInterfaces) && !containsValue(result.second, visitedInterfaces)) && competencePool.size() > 2)
             {
                 competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[bestIndexPool]), competencePool.end());
                 competencePoolIndexes.erase(remove(competencePoolIndexes.begin(), competencePoolIndexes.end(), competencePoolIndexes[bestIndexPool]), competencePoolIndexes.end());
 
-                competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[secondBestIndexPool]), competencePool.end());
-                competencePoolIndexes.erase(remove(competencePoolIndexes.begin(), competencePoolIndexes.end(), competencePoolIndexes[secondBestIndexPool]), competencePoolIndexes.end());
+                competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[secondBestIndexPool-1]), competencePool.end());
+                competencePoolIndexes.erase(remove(competencePoolIndexes.begin(), competencePoolIndexes.end(), competencePoolIndexes[secondBestIndexPool-1]), competencePoolIndexes.end());
             }
             else
             {
@@ -553,7 +551,6 @@ tuple <bool, int, int> isSwappable(int indexFirstInterface, int indexSecondInter
     int durationFormationOne = firstInter->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour - firstInter->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour;
     firstInter->hoursWorked -= durationFormationOne;
     firstInter->hoursWorkedPerDay[day(firstFormIndexes.second)] -= durationFormationOne;
-    int test = schedule[firstFormIndexes.second]->id;
 
     int index1 = getIndexFromID(schedule[firstFormIndexes.second]->id, schedule[firstFormIndexes.second]->day, schedule[firstFormIndexes.second]->startHour, schedule[firstFormIndexes.second]->endHour);
 
@@ -918,8 +915,8 @@ int main()
 
              pair<int, int> to_cross = tournamentSelection(next_population, firstCompetencePool, firstCompetencePoolIndexes, visitedInterfaces, mean_distance);
             //cout << "after to cross2" << endl;
-            crossInterfaces(to_cross.first, to_cross.second, next_population);
             cout << to_cross.first << " | "<< to_cross.second << endl;
+            crossInterfaces(to_cross.first, to_cross.second, next_population);
              visitedInterfaces.push_back(to_cross.first);
              visitedInterfaces.push_back(to_cross.second);
             //cout << "after crossInterfaces2" << endl;
