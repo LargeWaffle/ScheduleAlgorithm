@@ -4,7 +4,7 @@
 #include <functional>
 #include <ctime>
 
-#include "instances/instance-formations320.h"
+#include "instances/instance-formations96.h"
 #include "Interface.h"
 
 using namespace std;
@@ -49,7 +49,7 @@ vector<float> getFormationPosition(int indexFormation) //return formation center
         return {coord[3][0], coord[3][1]};
     } else if (formation[indexFormation][1] == SPECIALITE_INFORMATIQUE) {
         return {coord[4][0], coord[4][1]};
-    } else if (formation[indexFormation][1] == SPECIALITE_CUISINE) {
+    } else {
         return {coord[5][0], coord[5][1]};
     }
 }
@@ -104,8 +104,8 @@ inline bool hasSameCompetence(int indexFormation, int indexInterface) //true if 
     int competence_form = formation[indexFormation][2];
 
     return competence_form == 0 ?
-                  competences_interfaces[indexInterface][0] == 1
-                                 : competences_interfaces[indexInterface][1] == 1;
+           competences_interfaces[indexInterface][0] == 1
+                                : competences_interfaces[indexInterface][1] == 1;
 
 }
 
@@ -134,15 +134,7 @@ inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES]
 //check if interface's available for a formation, if yes returns true and where to insert the formation in the timetable
 pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES])
 {
-    if(indexInterface == 1 && indexFormation==20)
-    {
-        cout << "coucouÉ" << endl;
-    }
-    cout << indexInterface << "| " << indexFormation << endl;
-    if(indexInterface == 1 && indexFormation == 15)
-    {
-        cout << "coucou" << endl;
-    }
+
     pair <bool, int> result (false, -1);
     int day_ = day(indexFormation);
     int dayScheduleSize = int(population[indexInterface]->time_table[day_].size());
@@ -186,7 +178,7 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
                     {
                         if (formations_list[indexFormation]->endHour <=
                             population[indexInterface]->time_table[day_][indexOnDaySchedule +
-                                                                                        1]->startHour)
+                                                                         1]->startHour)
                         {
                             result.first = true;
                             result.second = indexOnDaySchedule + 1;
@@ -200,7 +192,7 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
                     {
                         if (formations_list[indexFormation]->endHour <=
                             population[indexInterface]->time_table[day_][indexOnDaySchedule +
-                                                                                        1]->startHour)
+                                                                         1]->startHour)
                         {
                             result.first = true;
                             result.second = indexOnDaySchedule + 1;
@@ -267,29 +259,6 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute
             population[indexInferface]->currentPosition = {coord[0][0], coord[0][1]};
         }
     }
-
-   /*
-    for (auto &currInterface : population)
-    {
-        for (auto &timetable : currInterface->time_table)
-        {
-            for (int i = 1; i < 7; i++)
-            {
-                for (auto & j : timetable.second)
-                {
-                    vector<float> formationPlace = getFormationPosition(j->indexSpec);
-
-                    currInterface->distance += euclideanDistance(currInterface->currentPosition[0], formationPlace[0], currInterface->currentPosition[1], formationPlace[1]);
-                    currInterface->currentPosition = formationPlace;
-                }
-                //Distance from last formation to HQ at the end of the day
-                currInterface->distance += euclideanDistance(currInterface->currentPosition[0], coord[0][0], currInterface->currentPosition[1], coord[0][1]);
-                currInterface->currentPosition = {coord[0][0], coord[0][1]};
-
-            }
-        }
-
-    }*/
 }
 
 void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
@@ -367,7 +336,6 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
     population[indexInterfaceTwo]->hoursWorked += durationFormationOne;
     population[indexInterfaceTwo]->hoursWorkedPerDay[dayF1] += durationFormationOne;
 
-    //cout <<"before insertion" << endl;
 
     if (!population[indexInterfaceOne]->time_table[dayF2].empty())
     {
@@ -538,13 +506,11 @@ pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visit
 
     while (containsValue(result, visitedIndex) || inter->time_table[result.first][result.second]->id != -1)
     {
-        cout << "boucle" << endl;
         uniform_int_distribution<int> day_distribution(1, 6);
         rd_day = day_distribution(nb_gen);
 
         if(!inter->time_table[rd_day].empty())
         {
-            cout << "in" << endl;
             uniform_int_distribution<int> form_distribution(0,  int(inter->time_table[rd_day].size() - 1));
             rd_form = form_distribution(nb_gen);
             result.first = rd_day, result.second = rd_form;
@@ -570,13 +536,11 @@ tuple <bool, int, int> isSwappable(int indexFirstInterface, int indexSecondInter
         copy_pop[i] = new Interface(*population[i]);
     }
 
-
     Interface * firstInter = copy_pop[indexFirstInterface];
     Interface * secondInter = copy_pop[indexSecondInterface];
 
     vector<Formation *> schedule = firstInter->time_table[firstFormIndexes.first];
-    // TODO : ici schedule est vide car firstInter->time_table[3] est vide aussi
-    // TODO :
+
     int durationFormationOne = firstInter->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour - firstInter->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour;
     firstInter->hoursWorked -= durationFormationOne;
     firstInter->hoursWorkedPerDay[day(firstFormIndexes.second)] -= durationFormationOne;
@@ -639,12 +603,9 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
     {
         for (auto & secondIndex : visitedIndexesSecond)
         {
-            //firstFormIndexes.first = secondFormIndexes.first = 1;
-            //firstFormIndexes.second = secondFormIndexes.second = 0;
-            //result = isSwappable(1,2,firstFormIndexes, secondFormIndexes, population);
 
             result = isSwappable(indexFirstInterface, indexSecondInterface, firstIndex, secondIndex, population);
-            //cout << "after is_swappable" << endl;
+
             swap = get<0>(result);
 
             if (swap)
@@ -664,7 +625,6 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
 
         int indexF1 = getIndexFromID(firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->id, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->day, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour);
         int indexF2 = getIndexFromID(secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->id, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->day, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->startHour, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->endHour);
-        //crossingOperator(population, 1, 2, 28, 47, get<1>(result), get<2>(result));
 
         if(indexF1 != -1 && indexF2 != -1)
         {
@@ -735,40 +695,40 @@ tuple<int, int> getExtremumDays(Interface *(&population)[NBR_INTERFACES], int in
 void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
 {
 
-        auto extremumInterfaces = getExtremumInterface(population);
-        auto extremumDays = getExtremumDays(population, get<0>(extremumInterfaces), get<1>(extremumInterfaces));
-        int indexBusiest = get<0>(extremumInterfaces);
-        int indexLeastBusy = get<1>(extremumInterfaces);
-        int busiestDay = get<0>(extremumDays);
-        
+    auto extremumInterfaces = getExtremumInterface(population);
+    auto extremumDays = getExtremumDays(population, get<0>(extremumInterfaces), get<1>(extremumInterfaces));
+    int indexBusiest = get<0>(extremumInterfaces);
+    int indexLeastBusy = get<1>(extremumInterfaces);
+    int busiestDay = get<0>(extremumDays);
 
-        Interface * busiestInterface = population[indexBusiest];
-        for(int k = 0; k < busiestInterface->time_table[busiestDay].size(); k+=1)
+
+    Interface * busiestInterface = population[indexBusiest];
+    for(int k = 0; k < busiestInterface->time_table[busiestDay].size(); k+=1)
+    {
+        Formation * currFormation = population[indexBusiest]->time_table[busiestDay][k];
+        int id = currFormation->id;
+        int indexForm = getIndexFromID(currFormation->id, currFormation->day, currFormation->startHour, currFormation->endHour);
+
+        //we check if the least busy interface is free
+        auto result = isFree(indexLeastBusy, indexForm, population);
+        if (result.first)
         {
-            Formation * currFormation = population[indexBusiest]->time_table[busiestDay][k];
-            int id = currFormation->id;
-            int indexForm = getIndexFromID(currFormation->id, currFormation->day, currFormation->startHour, currFormation->endHour);
+            int durationFormation = formations_list[indexForm]->endHour - formations_list[indexForm]->startHour;
 
-            //we check if the least busy interface is free
-            auto result = isFree(indexLeastBusy, indexForm, population);
-            if (result.first)
-            {
-                int durationFormation = formations_list[indexForm]->endHour - formations_list[indexForm]->startHour;
+            busiestInterface->assigned_missions.erase(remove(population[indexBusiest]->assigned_missions.begin(), population[indexBusiest]->assigned_missions.end(), indexForm), population[indexBusiest]->assigned_missions.end());
+            busiestInterface->time_table[currFormation->day].erase(busiestInterface->time_table[currFormation->day].begin() + k);
+            busiestInterface->hoursWorked -= durationFormation;
+            busiestInterface->hoursWorkedPerDay[currFormation->day] -= durationFormation;
 
-                busiestInterface->assigned_missions.erase(remove(population[indexBusiest]->assigned_missions.begin(), population[indexBusiest]->assigned_missions.end(), indexForm), population[indexBusiest]->assigned_missions.end());
-                busiestInterface->time_table[currFormation->day].erase(busiestInterface->time_table[currFormation->day].begin() + k);
-                busiestInterface->hoursWorked -= durationFormation;
-                busiestInterface->hoursWorkedPerDay[currFormation->day] -= durationFormation;
-
-                population[indexLeastBusy]->assigned_missions.insert(population[indexLeastBusy]->assigned_missions.begin(),indexForm);
-                population[indexLeastBusy]->hoursWorked += durationFormation;
-                population[indexLeastBusy]->hoursWorkedPerDay[currFormation->day] += durationFormation;
-                population[indexLeastBusy]->time_table[currFormation->day].insert(
-                        population[indexLeastBusy]->time_table[currFormation->day].begin() +
-                        result.second, formations_list[indexForm]);
-            }
-
+            population[indexLeastBusy]->assigned_missions.insert(population[indexLeastBusy]->assigned_missions.begin(),indexForm);
+            population[indexLeastBusy]->hoursWorked += durationFormation;
+            population[indexLeastBusy]->hoursWorkedPerDay[currFormation->day] += durationFormation;
+            population[indexLeastBusy]->time_table[currFormation->day].insert(
+                    population[indexLeastBusy]->time_table[currFormation->day].begin() +
+                    result.second, formations_list[indexForm]);
         }
+
+    }
 }
 
 // try to assign remaining formations to given population
@@ -807,7 +767,6 @@ void mutationOperator(Interface *(&population)[NBR_INTERFACES])
                         //add assigned mission to current interface assigned missions vector
                         population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),formationIndex);
 
-                        cout << "mutated" << endl;
                         break;
                     }
                 }
@@ -882,11 +841,10 @@ int main()
     }
 
     Interface *starting_population[NBR_INTERFACES];
-    //Interface *next_population[NBR_INTERFACES];
 
     vector<int> visitedInterfaces;
 
-     //1. Init pop - DONE
+    //1. Init pop - DONE
     fillPopulation(starting_population);// Fill starting population
     fillFormations(formations_list);
 
@@ -894,7 +852,7 @@ int main()
 
     isSolutionFeasible(starting_population);
 
-     //2. Eval pop - DONE
+    //2. Eval pop - DONE
     float eval = evaluatePopulation(starting_population);
 
     for (int times = 0; times < 100; times+=1)
@@ -910,74 +868,62 @@ int main()
 
     print_population(starting_population);
 
-    cout << "Eval of starting pop is " << eval << endl;
-    cout << "Eval of balanced pop is " << eval2 << endl;
+    //3.
 
-     //3.
-     //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevantdouble t = clock();
+    clock_t t = clock();
 
+    while(t / CLOCKS_PER_SEC < time_limit)
 
-     clock_t t = clock();
-     bool stop = false;
-     while(t / CLOCKS_PER_SEC < time_limit)
-     //while(!stop)
-    for (int x = 0; x < 30; x++)
-     {
-         Interface *next_population[NBR_INTERFACES];
+    {
+        Interface *next_population[NBR_INTERFACES];
 
 
-         for (int i = 0; i < NBR_INTERFACES; i++) {
-             next_population[i] = starting_population[i];
-         }
+        for (int i = 0; i < NBR_INTERFACES; i++) {
+            next_population[i] = starting_population[i];
+        }
 
-         float mean_distance = 0;
-         vector<Interface*> firstCompetencePool;
-         vector<int> firstCompetencePoolIndexes = getPool(starting_population, firstCompetencePool, mean_distance);
+        float mean_distance = 0;
+        vector<Interface*> firstCompetencePool;
+        vector<int> firstCompetencePoolIndexes = getPool(starting_population, firstCompetencePool, mean_distance);
 
-         mean_distance = 0;
-         vector<Interface*> secondCompetencePool;
-         vector<int> secondCompetencePoolIndexes= getPool(starting_population, secondCompetencePool, mean_distance, true);
+        mean_distance = 0;
+        vector<Interface*> secondCompetencePool;
+        vector<int> secondCompetencePoolIndexes= getPool(starting_population, secondCompetencePool, mean_distance, true);
 
         //4. next_pop filled grâce à la selection = selection des parents - DONE
         //5. Croisement dans next_population
 
         int poolLimit = int(firstCompetencePool.size());
 
-         while (visitedInterfaces.size() != poolLimit){
+        while (visitedInterfaces.size() != poolLimit){
 
-             pair<int, int> to_cross = tournamentSelection(next_population, firstCompetencePool, firstCompetencePoolIndexes, visitedInterfaces, mean_distance);
-            //cout << "after to cross2" << endl;
-            cout << to_cross.first << " | "<< to_cross.second << endl;
-             if(to_cross.first != to_cross.second)
-             {
-                 crossInterfaces(to_cross.first, to_cross.second, next_population);
-                 visitedInterfaces.push_back(to_cross.first);
-                 visitedInterfaces.push_back(to_cross.second);
-             }
+            pair<int, int> to_cross = tournamentSelection(next_population, firstCompetencePool, firstCompetencePoolIndexes, visitedInterfaces, mean_distance);
 
-            //cout << "after crossInterfaces2" << endl;
+            if(to_cross.first != to_cross.second)
+            {
+                crossInterfaces(to_cross.first, to_cross.second, next_population);
+                visitedInterfaces.push_back(to_cross.first);
+                visitedInterfaces.push_back(to_cross.second);
+            }
+
         }
 
-         visitedInterfaces.clear();
-         poolLimit = int(secondCompetencePool.size());
+        visitedInterfaces.clear();
+        poolLimit = int(secondCompetencePool.size());
 
-         while (visitedInterfaces.size() != poolLimit){
+        while (visitedInterfaces.size() != poolLimit){
 
-             pair<int, int> to_cross = tournamentSelection(next_population, secondCompetencePool, secondCompetencePoolIndexes, visitedInterfaces, mean_distance);
-             //cout << "after to cross2" << endl;
-             cout << to_cross.first << " | "<< to_cross.second << endl;
+            pair<int, int> to_cross = tournamentSelection(next_population, secondCompetencePool, secondCompetencePoolIndexes, visitedInterfaces, mean_distance);
 
-             if(to_cross.first != to_cross.second)
-             {
+            if(to_cross.first != to_cross.second)
+            {
                 crossInterfaces(to_cross.first, to_cross.second, next_population);
-                 visitedInterfaces.push_back(to_cross.first);
-                 visitedInterfaces.push_back(to_cross.second);
+                visitedInterfaces.push_back(to_cross.first);
+                visitedInterfaces.push_back(to_cross.second);
 
-             }
-
-             //cout << "after crossInterfaces2" << endl;
-         }
-         visitedInterfaces.clear();
+            }
+        }
+        visitedInterfaces.clear();
 
 
         //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
@@ -985,16 +931,15 @@ int main()
             starting_population[i] = next_population[i];
         }
 
-         updateInterfaceDistance(starting_population);
+        updateInterfaceDistance(starting_population);
 
-         //7. Evaluer new pop - DONE
-         float eval8 = evaluatePopulation(starting_population);
-         cout << "New pop eval is : " << eval8 << endl;
+        //7. Evaluer new pop - DONE
+        float eval8 = evaluatePopulation(starting_population);
+        cout << "New pop eval is : " << eval8 << endl;
 
-        //stop = true;
-         t = clock();
+        t = clock();
 
-     } //FIN WHILE
+    } //FIN WHILE
 
     print_population(starting_population);
 
@@ -1008,4 +953,3 @@ int main()
 
     return 0;
 }
-
