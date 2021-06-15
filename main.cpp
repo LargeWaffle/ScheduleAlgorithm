@@ -206,6 +206,21 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
     return result;
 }
 
+int getIndexFromID(int id, int day, int startHour, int endHour)
+{
+    int result = -1;
+
+    int initialValue = (NBR_FORMATIONS / NBR_APPRENANTS) * id;
+    int limit = initialValue + (NBR_FORMATIONS / NBR_APPRENANTS);
+
+    for (int k = initialValue; k < limit; k++)
+    {
+        if (formation[k][3] == day && formation[k][4] == startHour && formation[k][5] == endHour)
+            result = k;
+    }
+    return result;
+}
+
 auto euclideanDistance(float x1, float x2, float y1, float y2)
 {
     return float(sqrt(pow(x2 - x1, 2.0)+pow(y2 - y1,2.0)));
@@ -219,10 +234,35 @@ void resetDistance(Interface *(&population)[NBR_INTERFACES])
     }
 }
 
+
+
 void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute distance traveled by all the interfaces during a week
 {
     resetDistance(population);
 
+    for(int indexInferface = 0; indexInferface<NBR_INTERFACES; indexInferface++)
+    {
+        for (int i = 1; i < population[indexInferface]->time_table.size() + 1; i++)
+        {
+            for (int j = 0; j < population[indexInferface]->time_table[i].size(); j++)
+            {
+                if(population[indexInferface]->time_table[i][j]->id != -1)
+                {
+                    int indexFormation = getIndexFromID(population[indexInferface]->time_table[i][j]->id, population[indexInferface]->time_table[i][j]->day, population[indexInferface]->time_table[i][j]->startHour, population[indexInferface]->time_table[i][j]->endHour);
+                    vector<float> formationPlace = getFormationPosition(indexFormation);
+
+                    population[indexInferface]->distance += euclideanDistance(population[indexInferface]->currentPosition[0], formationPlace[0], population[indexInferface]->currentPosition[1], formationPlace[1]);
+                    population[indexInferface]->currentPosition = formationPlace;
+                }
+
+            }
+            //Distance from last formation to HQ at the end of the day
+            population[indexInferface]->distance += euclideanDistance(population[indexInferface]->currentPosition[0], coord[0][0], population[indexInferface]->currentPosition[1], coord[0][1]);
+            population[indexInferface]->currentPosition = {coord[0][0], coord[0][1]};
+        }
+    }
+
+   /*
     for (auto &currInterface : population)
     {
         for (auto &timetable : currInterface->time_table)
@@ -244,7 +284,7 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute
 
         }
 
-    }
+    }*/
 }
 
 void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
@@ -295,7 +335,6 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 // Crossover Operator on two interfaces given two formation slots
 void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfaceOne, int indexInterfaceTwo, int indexFormationOne, int indexFormationTwo, int index1, int index2)
 {
-    cout << "BOOM1" << endl;
     int durationFormationOne = formations_list[indexFormationOne]->endHour - formations_list[indexFormationOne]->startHour;
     int durationFormationTwo = formations_list[indexFormationTwo]->endHour - formations_list[indexFormationTwo]->startHour;
     int dayF1 = day(indexFormationOne);
@@ -514,21 +553,6 @@ pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visit
 
     visitedIndex.push_back(result);
 
-    return result;
-}
-
-int getIndexFromID(int id, int day, int startHour, int endHour)
-{
-    int result = -1;
-
-    int initialValue = (NBR_FORMATIONS / NBR_APPRENANTS) * id;
-    int limit = initialValue + (NBR_FORMATIONS / NBR_APPRENANTS);
-
-    for (int k = initialValue; k < limit; k++)
-    {
-        if (formation[k][3] == day && formation[k][4] == startHour && formation[k][5] == endHour)
-            result = k;
-    }
     return result;
 }
 
