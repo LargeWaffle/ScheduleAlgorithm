@@ -12,7 +12,6 @@ using namespace std;
 Formation *formations_list[NBR_FORMATIONS];
 vector<int> FORMATION_INDEXES(NBR_FORMATIONS);
 
-
 inline float getMean(float travelDistance){
     return travelDistance / NBR_INTERFACES;
 }
@@ -50,7 +49,7 @@ vector<float> getFormationPosition(int indexFormation) //return formation center
         return {coord[3][0], coord[3][1]};
     } else if (formation[indexFormation][1] == SPECIALITE_INFORMATIQUE) {
         return {coord[4][0], coord[4][1]};
-    } else {
+    } else if (formation[indexFormation][1] == SPECIALITE_CUISINE) {
         return {coord[5][0], coord[5][1]};
     }
 }
@@ -121,14 +120,13 @@ inline int day(int indexFormation) //return the day of the given formation
     return formations_list[indexFormation]->day;
 }
 
-//true if daily hours limit (12h) isn't reached
-inline bool isAmplitudeOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation)
+inline bool isAmplitudeOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation) //true if daily hours limit (12h) isn't reached
 {
     return (population[indexInterface]->hoursWorkedPerDay[day(indexFormation)] + (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour)) <= 12;
 }
 
-//true if weekly hours limits isn't reached
-inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation)
+
+inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES], int indexInterface, int indexFormation) //true if weekly hours limits isn't reached
 {
     return population[indexInterface]->hoursWorked + (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour) < 35;
 }
@@ -143,27 +141,33 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
 
     if(isAmplitudeOutpassed(population, indexInterface, indexFormation) && isWeeklyHoursQuotaOutpassed(population, indexInterface, indexFormation))
     {
-        if(dayScheduleSize == 0 || // day_schedule's empty
-                population[indexInterface]->time_table[day_][0]->id == -1 || //day_schedules only has the default formation
-                formations_list[indexFormation]->endHour <=
-                population[indexInterface]->time_table[day_][0]->startHour //can be inserted at the beginning of the day
-        )
+        if(dayScheduleSize == 0)
         {
             result.first = true;
             result.second = 0;
             return result;
         }
-            // can we inserted at the end of the day
-        else if (formations_list[indexFormation]->startHour >=
+        if (population[indexInterface]->time_table[day_][0]->id == -1)
+        {
+            result.first = true;
+            result.second = 0;
+            return result;
+        } else if (formations_list[indexFormation]->endHour <=
+                   population[indexInterface]->time_table[day_][0]->startHour)
+        {
+            result.first = true;
+            result.second = 0;
+            return result;
+        } else if (formations_list[indexFormation]->startHour >=
                    population[indexInterface]->time_table[day_][
                            population[indexInterface]->time_table[day_].size()-1]->endHour)
         {
             result.first = true;
-            result.second = int(population[indexInterface]->time_table[day_].size()); //index at the end
+            result.second = int(population[indexInterface]->time_table[day_].size());
             return result;
 
         }
-        else //we browse the list of formations to find a place
+        else
         {
             int indexOnDaySchedule = 0;
             for (auto &currForm : population[indexInterface]->time_table[day_])
@@ -202,12 +206,12 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
     return result;
 }
 
-auto euclideanDistance(float x1, float x2, float y1, float y2)  //return the euclidean distance between A(x1,y1) and B(x2,y2)
+auto euclideanDistance(float x1, float x2, float y1, float y2)
 {
     return float(sqrt(pow(x2 - x1, 2.0)+pow(y2 - y1,2.0)));
 }
 
-void resetDistance(Interface *(&population)[NBR_INTERFACES]) //reset the distance traveled before updateInterfaceDistance()
+void resetDistance(Interface *(&population)[NBR_INTERFACES])
 {
     for (auto &currInterface : population)
     {
@@ -217,9 +221,7 @@ void resetDistance(Interface *(&population)[NBR_INTERFACES]) //reset the distanc
 
 void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute distance traveled by all the interfaces during a week
 {
-    vector<float> formationPlace;
-
-    resetDistance(population); //reset distance traveled to avoid summation on previous distances
+    resetDistance(population);
 
     for (auto &currInterface : population)
     {
@@ -229,7 +231,7 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute
             {
                 for (auto & j : timetable.second)
                 {
-                    formationPlace = getFormationPosition(j->indexSpec);
+                    vector<float> formationPlace = getFormationPosition(j->indexSpec);
 
                     currInterface->distance += euclideanDistance(currInterface->currentPosition[0], formationPlace[0], currInterface->currentPosition[1], formationPlace[1]);
                     currInterface->currentPosition = formationPlace;
@@ -247,9 +249,6 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute
 
 void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 {
-    int day_;
-    pair<bool,int> result;
-
     //vector created to keep track of missing formations at the end of greedy
     for (int i = 0; i < NBR_FORMATIONS; i++) {
         FORMATION_INDEXES[i] = i;
@@ -261,8 +260,8 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
         {
             if (hasSameCompetence(indexFormation, indexInterface) == 1) //if interface has required competence
             {
-                day_ = day(indexFormation); //get day of curr formation
-                result = isFree(indexInterface, indexFormation, population);
+                int day_ = day(indexFormation); //get day of curr formation
+                pair<bool,int> result = isFree(indexInterface, indexFormation, population);
 
                 if (result.first)
                 {
@@ -290,36 +289,41 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
             }
         }
     }
-    updateInterfaceDistance(population); //compute the distance traveled in this solution
+    updateInterfaceDistance(population);
 }
 
 // Crossover Operator on two interfaces given two formation slots
 void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfaceOne, int indexInterfaceTwo, int indexFormationOne, int indexFormationTwo, int index1, int index2)
 {
+    cout << "BOOM1" << endl;
     int durationFormationOne = formations_list[indexFormationOne]->endHour - formations_list[indexFormationOne]->startHour;
     int durationFormationTwo = formations_list[indexFormationTwo]->endHour - formations_list[indexFormationTwo]->startHour;
     int dayF1 = day(indexFormationOne);
     int dayF2 = day(indexFormationTwo);
 
-    //MODIFY THE ASSIGNED MISSIONS OF EACH INTERFACE
+    //reversal of assigned missions
     population[indexInterfaceOne]->assigned_missions.erase(remove(population[indexInterfaceOne]->assigned_missions.begin(), population[indexInterfaceOne]->assigned_missions.end(), indexFormationOne), population[indexInterfaceOne]->assigned_missions.end());
     population[indexInterfaceTwo]->assigned_missions.erase(remove(population[indexInterfaceTwo]->assigned_missions.begin(), population[indexInterfaceTwo]->assigned_missions.end(), indexFormationTwo), population[indexInterfaceTwo]->assigned_missions.end());
+
     population[indexInterfaceOne]->assigned_missions.insert(population[indexInterfaceOne]->assigned_missions.begin(),indexFormationTwo);
     population[indexInterfaceTwo]->assigned_missions.insert(population[indexInterfaceTwo]->assigned_missions.begin(),indexFormationOne);
 
-    //DELETE FORMATION FORM EACH INTERFACE
     population[indexInterfaceOne]->time_table[dayF1].erase(population[indexInterfaceOne]->time_table[dayF1].begin() + index1);
     population[indexInterfaceTwo]->time_table[dayF2].erase(population[indexInterfaceTwo]->time_table[dayF2].begin() + index2);
 
-    //UPDATE DISTANCE WORKED PER WEEK / DAY
     population[indexInterfaceOne]->hoursWorked -= durationFormationOne;
     population[indexInterfaceOne]->hoursWorkedPerDay[dayF1] -= durationFormationOne;
+
     population[indexInterfaceTwo]->hoursWorked -= durationFormationTwo;
     population[indexInterfaceTwo]->hoursWorkedPerDay[dayF2] -= durationFormationTwo;
+
     population[indexInterfaceOne]->hoursWorked += durationFormationTwo;
     population[indexInterfaceOne]->hoursWorkedPerDay[dayF2] += durationFormationTwo;
+
     population[indexInterfaceTwo]->hoursWorked += durationFormationOne;
     population[indexInterfaceTwo]->hoursWorkedPerDay[dayF1] += durationFormationOne;
+
+    //cout <<"before insertion" << endl;
 
     if (!population[indexInterfaceOne]->time_table[dayF2].empty())
     {
@@ -341,9 +345,9 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
     {
         population[indexInterfaceTwo]->time_table[dayF1].push_back(formations_list[indexFormationOne]);
     }
+
+
 }
-
-
 bool containsValue(pair<int, int> value, vector<pair<int, int>>& visitedIndex)
 {
     bool found = false;
@@ -513,7 +517,6 @@ pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visit
     return result;
 }
 
-//returns index of the formation in FORMATIONS_LISTS given id, day, hour
 int getIndexFromID(int id, int day, int startHour, int endHour)
 {
     int result = -1;
@@ -543,7 +546,8 @@ tuple <bool, int, int> isSwappable(int indexFirstInterface, int indexSecondInter
     Interface * secondInter = copy_pop[indexSecondInterface];
 
     vector<Formation *> schedule = firstInter->time_table[firstFormIndexes.first];
-
+    // TODO : ici schedule est vide car firstInter->time_table[3] est vide aussi
+    // TODO :
     int durationFormationOne = firstInter->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour - firstInter->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour;
     firstInter->hoursWorked -= durationFormationOne;
     firstInter->hoursWorkedPerDay[day(firstFormIndexes.second)] -= durationFormationOne;
@@ -602,22 +606,22 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
 
     }
 
-    for (int i = 0; i < visitedIndexesFirst.size(); i++)
+    for (auto & firstIndex : visitedIndexesFirst)
     {
-        for (int j = 0; j < visitedIndexesSecond.size(); j++)
+        for (auto & secondIndex : visitedIndexesSecond)
         {
             //firstFormIndexes.first = secondFormIndexes.first = 1;
             //firstFormIndexes.second = secondFormIndexes.second = 0;
             //result = isSwappable(1,2,firstFormIndexes, secondFormIndexes, population);
 
-            result = isSwappable(indexFirstInterface, indexSecondInterface, visitedIndexesFirst[i], visitedIndexesSecond[j], population);
+            result = isSwappable(indexFirstInterface, indexSecondInterface, firstIndex, secondIndex, population);
             //cout << "after is_swappable" << endl;
             swap = get<0>(result);
 
             if (swap)
             {
-                firstFormIndexes = visitedIndexesFirst[i];
-                secondFormIndexes = visitedIndexesSecond[j];
+                firstFormIndexes = firstIndex;
+                secondFormIndexes = secondIndex;
                 break;
             }
         }
@@ -628,6 +632,7 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
 
     if (swap)
     {
+
         int indexF1 = getIndexFromID(firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->id, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->day, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour);
         int indexF2 = getIndexFromID(secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->id, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->day, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->startHour, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->endHour);
         //crossingOperator(population, 1, 2, 28, 47, get<1>(result), get<2>(result));
@@ -637,6 +642,7 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
             crossingOperator(population, indexFirstInterface, indexSecondInterface, indexF1, indexF2, get<1>(result), get<2>(result));
         }
     }
+
 }
 
 inline void print_population(Interface *(&population)[NBR_INTERFACES])
@@ -919,6 +925,7 @@ int main()
              //cout << "after crossInterfaces2" << endl;
          }
          visitedInterfaces.clear();
+
         //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
         for (int i = 0; i < NBR_INTERFACES; i++) {
             starting_population[i] = next_population[i];
