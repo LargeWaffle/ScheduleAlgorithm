@@ -11,6 +11,8 @@
 using namespace std;
 
 Formation *formations_list[NBR_FORMATIONS];
+vector<int> FORMATION_INDEXES(NBR_FORMATIONS);
+
 
 inline float getMean(float travelDistance){
     return travelDistance / NBR_INTERFACES;
@@ -251,9 +253,8 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute
 void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 {
     //vector created to keep track of missing formations at the end of greedy
-    vector<int> formationIndexes(NBR_FORMATIONS);
     for (int i = 0; i < NBR_FORMATIONS; i++) {
-        formationIndexes[i] = i;
+        FORMATION_INDEXES[i] = i;
     }
 
     for (int indexFormation = 0; indexFormation < NBR_FORMATIONS; indexFormation++)
@@ -278,7 +279,7 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
                                 population[indexInterface]->time_table[day_].begin() + result.second, formations_list[indexFormation]);
                     }
                     //delete assigned formation from formationIndexes vector
-                    formationIndexes.erase(remove(formationIndexes.begin(), formationIndexes.end(), indexFormation), formationIndexes.end());
+                    FORMATION_INDEXES.erase(remove(FORMATION_INDEXES.begin(), FORMATION_INDEXES.end(), indexFormation), FORMATION_INDEXES.end());
 
                     //update hours worked
                     population[indexInterface]->hoursWorked += (formations_list[indexFormation]->endHour - formations_list[indexFormation]->startHour);
@@ -433,6 +434,7 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], vec
                     secondBestIndexPool = i;
                 }
             }
+
 
             if ((containsValue(result.first, visitedInterfaces) || containsValue(result.second, visitedInterfaces)) && competencePool.size() > 2)
             {
@@ -759,6 +761,57 @@ void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
         }
 }
 
+void mutationOperator(Interface *(&population)[NBR_INTERFACES])
+{
+    if(!FORMATION_INDEXES.empty())
+    {
+        for (auto &formationIndex : FORMATION_INDEXES)
+        {
+            for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
+            {
+                if (hasSameCompetence(formationIndex, indexInterface) == 1) //if interface has required competence
+                {
+                    int day_ = day(formationIndex); //get day of curr formation
+                    pair<bool,int> result = isFree(indexInterface, formationIndex, population);
+
+                    if (result.first)
+                    {
+                        //we have to place the formation at the right place on the day
+                        if (result.second == 0) //replace first null formation
+                        {
+                            population[indexInterface]->time_table[day_].at(0) = formations_list[formationIndex];
+                        }
+                        else //insert at right time of the day
+                        {
+                            population[indexInterface]->time_table[day_].insert(
+                                    population[indexInterface]->time_table[day_].begin() + result.second, formations_list[formationIndex]);
+                        }
+                        //delete assigned formation from formationIndexes vector
+                        FORMATION_INDEXES.erase(remove(FORMATION_INDEXES.begin(), FORMATION_INDEXES.end(), formationIndex), FORMATION_INDEXES.end());
+
+                        //update hours worked
+                        population[indexInterface]->hoursWorked += (formations_list[formationIndex]->endHour - formations_list[formationIndex]->startHour);
+                        population[indexInterface]->hoursWorkedPerDay[day_] += (formations_list[formationIndex]->endHour - formations_list[formationIndex]->startHour);
+
+                        //add assigned mission to current interface assigned missions vector
+                        population[indexInterface]->assigned_missions.insert(population[indexInterface]->assigned_missions.begin(),formationIndex);
+
+                        cout << "mutated" << endl;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        cout << "do smh wtf" << endl;
+        cout << "no one's missing " << endl;
+    }
+
+}
+
+
 vector<int> getPool(Interface *(&population)[NBR_INTERFACES], vector<Interface*>& pool, float& mean_distance, bool secondPool = false)
 {
     float travelDistance = 0.0;
@@ -822,6 +875,9 @@ int main()
     }
 
     updateInterfaceDistance(starting_population);
+
+    mutationOperator(starting_population);
+
     float eval2 = evaluatePopulation(starting_population);
 
     print_population(starting_population);
