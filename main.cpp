@@ -820,6 +820,15 @@ vector<int> getPool(Interface *(&population)[NBR_INTERFACES], vector<Interface*>
 
 }
 
+bool tryParse(string& input, int& output) {
+    try{
+        output = std::stoi(input);
+    } catch (invalid_argument) {
+        return false;
+    }
+    return true;
+}
+
 int main()
 {
     // Main algo
@@ -828,6 +837,20 @@ int main()
     cout << "* Number of Interfaces = " << NBR_INTERFACES << endl;
     cout << "* Number of Apprentices = " << NBR_APPRENANTS << endl;
     cout << "* Number of nodes = " << NBR_NODES << endl << endl;
+
+
+    string input;
+    int time_limit;
+
+    cout << "How much time do you need ? " << endl;
+    cout << "Input must be inside [5;90] : ";
+    getline(cin, input);
+
+    while (!tryParse(input, time_limit) || (time_limit < 5 || 90 < time_limit))
+    {
+        cout << "Wrong input. Enter time_limit valid NUMBER: ";
+        getline(cin, input);
+    }
 
     Interface *starting_population[NBR_INTERFACES];
     //Interface *next_population[NBR_INTERFACES];
@@ -845,7 +868,7 @@ int main()
      //2. Eval pop - DONE
     float eval = evaluatePopulation(starting_population);
 
-    for (int times = 0; times < 100; times+=1)
+    for (int times = 0; times < 100; times++)
     {
         balancingPopulation(starting_population);
     }
@@ -867,9 +890,9 @@ int main()
 
      clock_t t = clock();
      bool stop = false;
-     //while(t / CLOCKS_PER_SEC < 30)
+     while(t / CLOCKS_PER_SEC < time_limit)
      //while(!stop)
-    for (int x = 0; x < 5; x++)
+    //for (int x = 0; x < 5; x++)
      {
          Interface *next_population[NBR_INTERFACES];
 
