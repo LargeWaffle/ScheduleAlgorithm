@@ -516,19 +516,27 @@ pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visit
 
     int rd_day; int rd_form;
     pair<int, int> result{-1, -1};
-    cout << "before while" << endl;
+
     while (containsValue(result, visitedIndex) || inter->time_table[result.first][result.second]->id != -1)
     {
-        cout << "in while" << endl;
+        cout << "boucle" << endl;
         uniform_int_distribution<int> day_distribution(1, 6);
         rd_day = day_distribution(nb_gen);
-        cout << rd_day << endl;
-        uniform_int_distribution<int> form_distribution(0,  int(inter->time_table[rd_day].size() - 1));
-        rd_form = form_distribution(nb_gen);
 
-        result.first = rd_day, result.second = rd_form;
+        if(!inter->time_table[rd_day].empty())
+        {
+            cout << "in" << endl;
+            uniform_int_distribution<int> form_distribution(0,  int(inter->time_table[rd_day].size() - 1));
+            rd_form = form_distribution(nb_gen);
+            result.first = rd_day, result.second = rd_form;
+        }
+        else
+        {
+            continue;
+        }
+
     }
-    cout << "left while" << endl;
+
     visitedIndex.push_back(result);
 
     return result;
@@ -821,7 +829,7 @@ int main()
      //while(!stop)
      {
          for (int i = 0; i < NBR_INTERFACES; i++) {
-             next_population[i] = new Interface(*starting_population[i]);
+             next_population[i] = starting_population[i];
          }
         //4. next_pop filled grâce à la selection = selection des parents - DONE
         //5. Croisement dans next_population
