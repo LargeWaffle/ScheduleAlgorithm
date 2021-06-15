@@ -234,8 +234,6 @@ void resetDistance(Interface *(&population)[NBR_INTERFACES])
     }
 }
 
-
-
 void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute distance traveled by all the interfaces during a week
 {
     resetDistance(population);
@@ -267,7 +265,7 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute
     {
         for (auto &timetable : currInterface->time_table)
         {
-            for (int i = 0; i < 6; i++)
+            for (int i = 1; i < 7; i++)
             {
                 for (auto & j : timetable.second)
                 {
@@ -281,7 +279,6 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute
                 currInterface->currentPosition = {coord[0][0], coord[0][1]};
 
             }
-
         }
 
     }*/
@@ -887,13 +884,13 @@ int main()
 
      //3.
      //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevantdouble t = clock();
-     //
+
 
      clock_t t = clock();
      bool stop = false;
      //while(t / CLOCKS_PER_SEC < 30)
      //while(!stop)
-    for (int x = 0; x < 5; x++)
+    for (int x = 0; x < 30; x++)
      {
          Interface *next_population[NBR_INTERFACES];
 

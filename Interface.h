@@ -173,8 +173,6 @@ public:
                 if(time_table[i][j]->id != -1 && speciality[time_table[i][j]->indexSpec] == 0)
                     nbPenalty++;
             }
-
-
         }
 
         return nbPenalty;
