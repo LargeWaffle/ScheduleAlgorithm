@@ -367,6 +367,7 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], boo
         }
     }
 
+
     mean_distance = getMean(travelDistance);
 
 
@@ -583,18 +584,28 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
         {
             cout << "before random" << endl;
             firstFormIndexes = getRandomForm(firstInterface, visitedIndexesFirst);
+<<<<<<< HEAD
             cout << "after random" << endl;
         }
 
+=======
+            cout << "before random" << endl;
+        }
+>>>>>>> 1f9a2893a761a60157078a263e2f50354eafd888
 
 
         if (secondFormIndexes.first == -1)
         {
+<<<<<<< HEAD
             cout << "before random" << endl;
             secondFormIndexes = getRandomForm(secondInterface, visitedIndexesSecond);
             cout << "before random" << endl;
         }
 
+=======
+            secondFormIndexes = getRandomForm(secondInterface, visitedIndexesSecond);
+        }
+>>>>>>> 1f9a2893a761a60157078a263e2f50354eafd888
     }
 
     for (int i = 0; i < visitedIndexesFirst.size(); i++)
