@@ -181,9 +181,11 @@ public:
     float getInterfaceEvaluation(float meandistance)
     {
         int nbSpeciality = (int)assigned_missions.size() - getPenalty();
-        int emptyInterface = distance == 0 ? 50 : 0;
+        //int nbSpeciality = getPenalty();
 
-        float score = 0.7 * (nbSpeciality + emptyInterface) + 0.3 * 1/ abs(meandistance - distance);
+        int emptyInterface = distance == 0 ? 500 : 0;
+
+        float score = 0.4 * (nbSpeciality + emptyInterface) + 0.6 * (1/ abs(meandistance - distance));
         this->fitness = score;
 
         return score;

@@ -4,7 +4,7 @@
 #include <functional>
 #include <ctime>
 
-#include "instances/instance-formations96.h"
+#include "instances/instance-formations320.h"
 #include "Interface.h"
 
 using namespace std;
@@ -134,7 +134,15 @@ inline bool isWeeklyHoursQuotaOutpassed(Interface *(&population)[NBR_INTERFACES]
 //check if interface's available for a formation, if yes returns true and where to insert the formation in the timetable
 pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&population)[NBR_INTERFACES])
 {
-
+    if(indexInterface == 1 && indexFormation==20)
+    {
+        cout << "coucouÉ" << endl;
+    }
+    cout << indexInterface << "| " << indexFormation << endl;
+    if(indexInterface == 1 && indexFormation == 15)
+    {
+        cout << "coucou" << endl;
+    }
     pair <bool, int> result (false, -1);
     int day_ = day(indexFormation);
     int dayScheduleSize = int(population[indexInterface]->time_table[day_].size());
@@ -206,6 +214,21 @@ pair<bool, int> isFree(int indexInterface, int indexFormation, Interface *(&popu
     return result;
 }
 
+int getIndexFromID(int id, int day, int startHour, int endHour)
+{
+    int result = -1;
+
+    int initialValue = (NBR_FORMATIONS / NBR_APPRENANTS) * id;
+    int limit = initialValue + (NBR_FORMATIONS / NBR_APPRENANTS);
+
+    for (int k = initialValue; k < limit; k++)
+    {
+        if (formation[k][3] == day && formation[k][4] == startHour && formation[k][5] == endHour)
+            result = k;
+    }
+    return result;
+}
+
 auto euclideanDistance(float x1, float x2, float y1, float y2)
 {
     return float(sqrt(pow(x2 - x1, 2.0)+pow(y2 - y1,2.0)));
@@ -223,11 +246,34 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute
 {
     resetDistance(population);
 
+    for(int indexInferface = 0; indexInferface<NBR_INTERFACES; indexInferface++)
+    {
+        for (int i = 1; i < population[indexInferface]->time_table.size() + 1; i++)
+        {
+            for (int j = 0; j < population[indexInferface]->time_table[i].size(); j++)
+            {
+                if(population[indexInferface]->time_table[i][j]->id != -1)
+                {
+                    int indexFormation = getIndexFromID(population[indexInferface]->time_table[i][j]->id, population[indexInferface]->time_table[i][j]->day, population[indexInferface]->time_table[i][j]->startHour, population[indexInferface]->time_table[i][j]->endHour);
+                    vector<float> formationPlace = getFormationPosition(indexFormation);
+
+                    population[indexInferface]->distance += euclideanDistance(population[indexInferface]->currentPosition[0], formationPlace[0], population[indexInferface]->currentPosition[1], formationPlace[1]);
+                    population[indexInferface]->currentPosition = formationPlace;
+                }
+
+            }
+            //Distance from last formation to HQ at the end of the day
+            population[indexInferface]->distance += euclideanDistance(population[indexInferface]->currentPosition[0], coord[0][0], population[indexInferface]->currentPosition[1], coord[0][1]);
+            population[indexInferface]->currentPosition = {coord[0][0], coord[0][1]};
+        }
+    }
+
+   /*
     for (auto &currInterface : population)
     {
         for (auto &timetable : currInterface->time_table)
         {
-            for (int i = 0; i < 6; i++)
+            for (int i = 1; i < 7; i++)
             {
                 for (auto & j : timetable.second)
                 {
@@ -241,10 +287,9 @@ void updateInterfaceDistance(Interface *(&population)[NBR_INTERFACES]) //compute
                 currInterface->currentPosition = {coord[0][0], coord[0][1]};
 
             }
-
         }
 
-    }
+    }*/
 }
 
 void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
@@ -295,7 +340,6 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 // Crossover Operator on two interfaces given two formation slots
 void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfaceOne, int indexInterfaceTwo, int indexFormationOne, int indexFormationTwo, int index1, int index2)
 {
-    cout << "BOOM1" << endl;
     int durationFormationOne = formations_list[indexFormationOne]->endHour - formations_list[indexFormationOne]->startHour;
     int durationFormationTwo = formations_list[indexFormationTwo]->endHour - formations_list[indexFormationTwo]->startHour;
     int dayF1 = day(indexFormationOne);
@@ -514,21 +558,6 @@ pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visit
 
     visitedIndex.push_back(result);
 
-    return result;
-}
-
-int getIndexFromID(int id, int day, int startHour, int endHour)
-{
-    int result = -1;
-
-    int initialValue = (NBR_FORMATIONS / NBR_APPRENANTS) * id;
-    int limit = initialValue + (NBR_FORMATIONS / NBR_APPRENANTS);
-
-    for (int k = initialValue; k < limit; k++)
-    {
-        if (formation[k][3] == day && formation[k][4] == startHour && formation[k][5] == endHour)
-            result = k;
-    }
     return result;
 }
 
@@ -868,7 +897,7 @@ int main()
      //2. Eval pop - DONE
     float eval = evaluatePopulation(starting_population);
 
-    for (int times = 0; times < 100; times++)
+    for (int times = 0; times < 100; times+=1)
     {
         balancingPopulation(starting_population);
     }
@@ -886,15 +915,16 @@ int main()
 
      //3.
      //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevantdouble t = clock();
-     //
+
 
      clock_t t = clock();
      bool stop = false;
      while(t / CLOCKS_PER_SEC < time_limit)
      //while(!stop)
-    //for (int x = 0; x < 5; x++)
+    for (int x = 0; x < 30; x++)
      {
          Interface *next_population[NBR_INTERFACES];
+
 
          for (int i = 0; i < NBR_INTERFACES; i++) {
              next_population[i] = starting_population[i];
@@ -948,6 +978,7 @@ int main()
              //cout << "after crossInterfaces2" << endl;
          }
          visitedInterfaces.clear();
+
 
         //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
         for (int i = 0; i < NBR_INTERFACES; i++) {
