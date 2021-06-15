@@ -594,40 +594,18 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
 
     Interface * firstInterface = population[indexFirstInterface];
     Interface * secondInterface = population[indexSecondInterface];
-    cout << "after declarations" << endl;
+
     while (visitedIndexesFirst.size() != firstInterface->assigned_missions.size() && visitedIndexesSecond.size() != secondInterface->assigned_missions.size())
     {
         firstFormIndexes = getNonSpecialityForm(firstInterface, visitedIndexesFirst);
-        cout << "after firstformindexes" << endl;
         secondFormIndexes = getNonSpecialityForm(secondInterface, visitedIndexesSecond);
-        cout << "after twoformindexes" << endl;
 
         if (firstFormIndexes.first == -1)
-        {
-            cout << "before random" << endl;
             firstFormIndexes = getRandomForm(firstInterface, visitedIndexesFirst);
-<<<<<<< HEAD
-            cout << "after random" << endl;
-        }
-
-=======
-            cout << "before random" << endl;
-        }
->>>>>>> 1f9a2893a761a60157078a263e2f50354eafd888
-
 
         if (secondFormIndexes.first == -1)
-        {
-<<<<<<< HEAD
-            cout << "before random" << endl;
             secondFormIndexes = getRandomForm(secondInterface, visitedIndexesSecond);
-            cout << "before random" << endl;
-        }
 
-=======
-            secondFormIndexes = getRandomForm(secondInterface, visitedIndexesSecond);
-        }
->>>>>>> 1f9a2893a761a60157078a263e2f50354eafd888
     }
 
     for (int i = 0; i < visitedIndexesFirst.size(); i++)
@@ -753,9 +731,9 @@ void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
         
 
         Interface * busiestInterface = population[indexBusiest];
-        for(int k = 0; k < busiestInterface->time_table[].size(); k+=1)
+        for(int k = 0; k < busiestInterface->time_table[busiestDay].size(); k+=1)
         {
-            Formation * currFormation = population[indexBusiest]->time_table[indexBusiest][k];
+            Formation * currFormation = population[indexBusiest]->time_table[busiestDay][k];
             int id = currFormation->id;
             int indexForm = getIndexFromID(currFormation->id, currFormation->day, currFormation->startHour, currFormation->endHour);
 
@@ -859,6 +837,9 @@ int main()
     isSolutionFeasible(starting_population);
     cout << "after isfeasible" << endl;
 
+    cout << "HEY" << endl;
+    cout << *starting_population[0] << endl;
+    cout << "get peno" << starting_population[0]->getPenalty() << endl;
      //2. Eval pop - DONE
     float eval = evaluatePopulation(starting_population);
     cout << "Eval of starting pop is " << eval << endl;

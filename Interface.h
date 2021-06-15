@@ -166,16 +166,14 @@ public:
     {
         int nbPenalty = 0;
 
-        for(int i = 0; i < assigned_missions.size(); i++){
+        for (int i = 1; i < time_table.size() + 1; i++)
+        {
+            for (int j = 0; j < time_table[i].size(); j++)
+            {
+                if(time_table[i][j]->id != -1 && speciality[time_table[i][j]->indexSpec] == 0)
+                    nbPenalty++;
+            }
 
-            int index = assigned_missions[i];
-
-            for (int j = 0; j < NBR_SPECIALITES; j++)
-
-                if(speciality[j] == 1)
-
-                    if(j == formation[index][1])
-                        nbPenalty++;
 
         }
 
