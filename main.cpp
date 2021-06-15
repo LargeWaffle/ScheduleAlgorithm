@@ -297,7 +297,7 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 // Crossover Operator on two interfaces given two formation slots
 void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfaceOne, int indexInterfaceTwo, int indexFormationOne, int indexFormationTwo, int index1, int index2)
 {
-    cout << "hello" << endl;
+    //cout << "hello" << endl;
     int durationFormationOne = formations_list[indexFormationOne]->endHour - formations_list[indexFormationOne]->startHour;
     int durationFormationTwo = formations_list[indexFormationTwo]->endHour - formations_list[indexFormationTwo]->startHour;
     int dayF1 = day(indexFormationOne);
@@ -325,13 +325,29 @@ void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfa
     population[indexInterfaceTwo]->hoursWorked += durationFormationOne;
     population[indexInterfaceTwo]->hoursWorkedPerDay[dayF1] += durationFormationOne;
 
-    cout <<"before insertion" << endl;
+    //cout <<"before insertion" << endl;
 
-    population[indexInterfaceOne]->time_table[dayF2].insert(
-            population[indexInterfaceOne]->time_table[dayF2].begin() + index1, formations_list[indexFormationTwo]);
+    if (!population[indexInterfaceOne]->time_table[dayF2].empty())
+    {
+        population[indexInterfaceOne]->time_table[dayF2].insert(
+                population[indexInterfaceOne]->time_table[dayF2].begin() + index1, formations_list[indexFormationTwo]);
+    }
+    else
+    {
+        population[indexInterfaceOne]->time_table[dayF2].push_back(formations_list[indexFormationTwo]);
+    }
 
-    population[indexInterfaceTwo]->time_table[dayF1].insert(
-            population[indexInterfaceTwo]->time_table[dayF1].begin() + index2, formations_list[indexFormationOne]);
+
+    if (!population[indexInterfaceTwo]->time_table[dayF1].empty())
+    {
+        population[indexInterfaceTwo]->time_table[dayF1].insert(
+                population[indexInterfaceTwo]->time_table[dayF1].begin() + index2, formations_list[indexFormationOne]);
+    }
+    else
+    {
+        population[indexInterfaceTwo]->time_table[dayF1].push_back(formations_list[indexFormationOne]);
+    }
+
 
 }
 bool containsValue(pair<int, int> value, vector<pair<int, int>>& visitedIndex)
@@ -617,7 +633,7 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
             //result = isSwappable(1,2,firstFormIndexes, secondFormIndexes, population);
 
             result = isSwappable(indexFirstInterface, indexSecondInterface, visitedIndexesFirst[i], visitedIndexesSecond[j], population);
-            cout << "after is_swappable" << endl;
+            //cout << "after is_swappable" << endl;
             swap = get<0>(result);
 
             if (swap)
@@ -639,39 +655,42 @@ void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interfac
 
     if (swap)
     {
-        cout << "swapped" << endl;
+        //cout << "swapped" << endl;
 
         int indexF1 = getIndexFromID(firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->id, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->day, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->startHour, firstInterface->time_table[firstFormIndexes.first][firstFormIndexes.second]->endHour);
         int indexF2 = getIndexFromID(secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->id, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->day, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->startHour, secondInterface->time_table[secondFormIndexes.first][secondFormIndexes.second]->endHour);
-        cout << "coucou" << endl;
+        //cout << "coucou" << endl;
         //crossingOperator(population, 1, 2, 28, 47, get<1>(result), get<2>(result));
         //crossingOperator(population, indexFirstInterface, indexSecondInterface, firstFormIndexes.second, secondFormIndexes.second, get<1>(result), get<2>(result));
         if(indexF1 != -1 && indexF2 != -1)
         {
-            cout << "different from -1" << endl;
+            //cout << "different from -1" << endl;
             crossingOperator(population, indexFirstInterface, indexSecondInterface, indexF1, indexF2, get<1>(result), get<2>(result));
         }
     }
-    else
-    {
-        cout << "didn't swap" << endl;
-    }
 
-    cout << "DEBUG AFTER" << endl;
-    cout << *firstInterface << endl;
-    cout << "Second inter" << endl;
-    cout << *secondInterface << endl;
 
-    for (int i = 0; i < 8; ++i) {
-        cout << endl;
-    }
+    //cout << "DEBUG AFTER" << endl;
+    //cout << *firstInterface << endl;
+    //cout << "Second inter" << endl;
+    //cout << *secondInterface << endl;
+
+    //for (int i = 0; i < 8; ++i) {
+    //    cout << endl;
+    //}
 
 }
 
 inline void print_population(Interface *(&population)[NBR_INTERFACES])
 {
-    for(Interface *i : population)
-        cout << *i << endl;
+    int index = 0;
+
+    for( auto &elem : population)
+    {
+        cout << "interface : " << index << endl;
+        elem->displayTimeTable();
+        index++;
+    }
 }
 
 tuple<int, int> getExtremumInterface(Interface *(&population)[NBR_INTERFACES])
@@ -682,7 +701,6 @@ tuple<int, int> getExtremumInterface(Interface *(&population)[NBR_INTERFACES])
 
     for (int indexInterface = 0; indexInterface < NBR_INTERFACES; indexInterface++)
     {
-        cout << population[indexInterface]->hoursWorked << endl;
         if (population[indexInterface]->hoursWorked > max)
         {
             max = population[indexInterface]->hoursWorked;
@@ -722,7 +740,6 @@ tuple<int, int> getExtremumDays(Interface *(&population)[NBR_INTERFACES], int in
 void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
 {
 
-
         auto extremumInterfaces = getExtremumInterface(population);
         auto extremumDays = getExtremumDays(population, get<0>(extremumInterfaces), get<1>(extremumInterfaces));
         int indexBusiest = get<0>(extremumInterfaces);
@@ -739,7 +756,6 @@ void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
 
             //we check if the least busy interface is free
             auto result = isFree(indexLeastBusy, indexForm, population);
-            cout << "isresult" << endl;
             if (result.first)
             {
                 int durationFormation = formations_list[indexForm]->endHour - formations_list[indexForm]->startHour;
@@ -755,8 +771,6 @@ void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
                 population[indexLeastBusy]->time_table[currFormation->day].insert(
                         population[indexLeastBusy]->time_table[currFormation->day].begin() +
                         result.second, formations_list[indexForm]);
-                cout << "balance occured" << endl;
-
             }
 
         }
@@ -764,58 +778,6 @@ void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
 
 int main()
 {
-    /*
-    cout << "IT45 - Probleme d affectation d employes\n" << endl;
-    cout << "Configuration of the problem" << endl;
-    cout << "* Number of Interfaces = " << NBR_INTERFACES << endl;
-    cout << "* Number of Apprentices = " << NBR_APPRENANTS << endl;
-    cout << "* Number of nodes = " << NBR_NODES << endl << endl;
-
-    Interface *starting_population[NBR_INTERFACES];
-    Interface *next_population[NBR_INTERFACES];
-
-    fillPopulation(starting_population);    // Fill starting population
-    fillFormations(formations_list);
-
-    greedyFirstSolution(starting_population);
-
-    if(isSolutionFeasible(starting_population))
-        cout << "Complete solution" << endl;
-    else
-        cout << "Incomplete solution" << endl;
-
-    //for(auto &f : formations_list)
-    //    f->displayFormation();
-
-    int index = 0;
-    for(auto &i : starting_population)
-    {
-        cout << "Interface " << index << endl;
-        i->displayTimeTable();
-        cout << endl;
-        index += 1;
-    }
-
-
-    float eval = evaluatePopulation(starting_population);
-    cout << "Eval of starting pop is " << eval << endl;
-    //crossingOperator(starting_population, 1, 2, 21, 32, 0, 0);
-
-    //eval = evaluatePopulation(next_population);
-    //cout << "Eval of next pop is " << eval << endl;
-
-    //cout << *starting_population[1] << endl << *starting_population[2] << endl;
-
-    //for(Interface *i : starting_population)
-    //    cout << *i << endl;
-
-    //for(Interface *i : next_population)
-    //    cout << *i << endl;
-
-    //crossingOperator(starting_population, 1, 2, 21, 32);
-
-    */
-    //int test = getIndexFromID(19,4,9,11);
     // Main algo
     cout << "IT45 - Probleme d affectation d employes\n" << endl;
     cout << "Configuration of the problem" << endl;
@@ -825,32 +787,17 @@ int main()
 
     Interface *starting_population[NBR_INTERFACES];
     Interface *next_population[NBR_INTERFACES];
-    cout << "after declaration" << endl;
+
      //1. Init pop - DONE
     fillPopulation(starting_population);// Fill starting population
-    cout << "after fillpop" << endl;
     fillFormations(formations_list);
-    cout << "after fillform" << endl;
+
     greedyFirstSolution(starting_population);
-    cout << "after greedy" << endl;
 
     isSolutionFeasible(starting_population);
-    cout << "after isfeasible" << endl;
 
-    cout << "HEY" << endl;
-    cout << *starting_population[0] << endl;
-    cout << "get peno" << starting_population[0]->getPenalty() << endl;
      //2. Eval pop - DONE
     float eval = evaluatePopulation(starting_population);
-    cout << "Eval of starting pop is " << eval << endl;
-
-    int index = 0;
-    for( auto &i : starting_population)
-    {
-        cout << "interface : " << index << endl;
-        i->displayTimeTable();
-        index+=1;
-    }
 
     for (int times = 0; times < 100; times+=1)
     {
@@ -859,24 +806,19 @@ int main()
 
     updateInterfaceDistance(starting_population);
     float eval2 = evaluatePopulation(starting_population);
+
+    print_population(starting_population);
+
+    cout << "Eval of starting pop is " << eval << endl;
     cout << "Eval of balanced pop is " << eval2 << endl;
 
-    int index2 = 0;
-    for( auto &i : starting_population)
-    {
-        cout << "interface : " << index2 << endl;
-        i->displayTimeTable();
-        index2+=1;
-    }
-
-    /*
      //3.
      //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevantdouble t = clock();
      //
      clock_t t = clock();
     bool stop = false;
-     //while(t / CLOCKS_PER_SEC < 30)
-     while(!stop)
+     while(t / CLOCKS_PER_SEC < 30)
+     //while(!stop)
      {
          for (int i = 0; i < NBR_INTERFACES; i++) {
              next_population[i] = new Interface(*starting_population[i]);
@@ -885,43 +827,44 @@ int main()
         //5. Croisement dans next_population
 
         for(int i = 0; i < NBR_INTERFACES; i++){
-            cout << i << endl;
+            //cout << i << endl;
             pair<int, int> to_cross = tournamentSelection(next_population);
-            cout << "after to cross" << endl;
+            //cout << "after to cross" << endl;
             //pair<int, int> to_cross{1, 2};
             crossInterfaces(to_cross.first, to_cross.second, next_population);
-            cout << "after crossInterfaces1" << endl;
+            //cout << "after crossInterfaces1" << endl;
             to_cross = tournamentSelection(next_population, true);
-            cout << "after to cross2" << endl;
+            //cout << "after to cross2" << endl;
             crossInterfaces(to_cross.first, to_cross.second, next_population);
-            cout << "after crossInterfaces2" << endl;
+            //cout << "after crossInterfaces2" << endl;
         }
-
-        //7. Evaluer new pop - DONE
-        eval = evaluatePopulation(next_population);
-        cout << "New pop eval is : " << eval << endl;
 
         //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
         for (int i = 0; i < NBR_INTERFACES; i++) {
             starting_population[i] = next_population[i];
         }
-        stop = true;
-         //t = clock();
+
+         updateInterfaceDistance(starting_population);
+
+         //7. Evaluer new pop - DONE
+         eval = evaluatePopulation(starting_population);
+         cout << "New pop eval is : " << eval << endl;
+
+        //stop = true;
+         t = clock();
 
      } //FIN WHILE
 
-     cout << "Time out !" << endl;
-    int index2 = 0;
-    for( auto &i : starting_population)
-    {
-        //if (i->competence[0] == 0 && i->competence[1]== 1)
-        //{
-        cout << "interface : " << index2 << endl;
-        i->displayTimeTable();
-        index2+=1;
-        //}
+    print_population(starting_population);
 
-    }*/
+    float eval3 = evaluatePopulation(starting_population);
+
+    cout << "Eval of starting pop is " << eval << endl;
+    cout << "Eval of balanced pop is " << eval2 << endl;
+    cout << "Final pop eval is : " << eval3 << endl;
+
+    cout << "Time out !" << endl;
+
     return 0;
 }
 
