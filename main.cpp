@@ -380,101 +380,76 @@ bool containsValue(int value, vector<int>& visitedIndex)
     return found;
 }
 
-pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], bool secondPool = false) {
-
-    int pool_length, tournament_pool_length;
-    float bestScore, secondBestScore, currScore, mean_distance, travelDistance = 0.0;
-
-    vector<Interface *> pool;
-    vector<int> indexes;
-    vector<int> tournament_indexes;
-
-
-    // POOL FILLING
-
-    for(int i = 0; i < NBR_INTERFACES; i++){
-        travelDistance += population[i]->distance;
-        int true_index = i;
-
-        if (secondPool){
-            if (population[i]->competence[0] == 1)
-            {
-                pool.push_back(population[i]);
-                indexes.push_back(true_index);
-            }
-        }
-        else{
-            if(population[i]->competence[1] == 1)
-            {
-                pool.push_back(population[i]);
-                indexes.push_back(true_index);
-            }
-        }
-    }
-
-
-    mean_distance = getMean(travelDistance);
-
-
-    pool_length = int(pool.size());
-    tournament_pool_length = ceil(0.7 * pool_length);
-
-    vector<int> visitedValues;
-    vector<Interface *> tournament_pool;
-
-    random_device rd;
-    mt19937 nb_gen(rd());
-    uniform_int_distribution<int> pool_distribution(0, pool_length - 1);
+pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], vector<Interface*>& competencePool, vector<int>& competencePoolIndexes, vector<int>& visitedInterfaces, float mean_distance) {
 
     // SELECT PARTICIPANTS
-
-    while(visitedValues.size() != tournament_pool_length)
-    {
-        int random = pool_distribution(nb_gen);
-
-        if (!containsValue(random, visitedValues))
-        {
-            visitedValues.push_back(random);
-
-            tournament_pool.push_back(pool[random]);
-            tournament_indexes.push_back(indexes[random]);
-        }
-
-    }
-
-    // GET 2 BEST INTERFACES
-
     pair<int, int> result;
+    bool exec = false;
 
-    bestScore = tournament_pool[1]->getInterfaceEvaluation(mean_distance);
-    result.first = tournament_indexes[1];
+    if (competencePool.size() == 1)
+    {
+        visitedInterfaces.push_back(competencePoolIndexes[0]);
+    }
+    else
+    {
+        do
+        {
+            int bestIndexPool, secondBestIndexPool;
+            float bestScore, secondBestScore, currScore;
 
-    secondBestScore = tournament_pool[0]->getInterfaceEvaluation(mean_distance);
-    result.second = tournament_indexes[0];
+            bestScore = competencePool[1]->getInterfaceEvaluation(mean_distance);
+            result.first = competencePoolIndexes[1];
+            bestIndexPool = 1;
 
-    if(secondBestScore > bestScore){
-        bestScore = tournament_pool[0]->getInterfaceEvaluation(mean_distance);
-        result.first = tournament_indexes[0];
+            secondBestScore = competencePool[0]->getInterfaceEvaluation(mean_distance);
+            result.second = competencePoolIndexes[0];
+            secondBestIndexPool = 0;
 
-        secondBestScore = tournament_pool[1]->getInterfaceEvaluation(mean_distance);
-        result.second = tournament_indexes[1];
+            if(secondBestScore > bestScore){
+                bestScore = competencePool[0]->getInterfaceEvaluation(mean_distance);
+                result.first = competencePoolIndexes[0];
+                bestIndexPool = 0;
+
+                secondBestScore = competencePool[1]->getInterfaceEvaluation(mean_distance);
+                result.second = competencePoolIndexes[1];
+                secondBestIndexPool = 1;
+            }
+
+            for (int i = 2; i < competencePool.size(); i++) {
+                currScore = competencePool[i]->getInterfaceEvaluation(mean_distance);
+
+                if (currScore > bestScore) {
+                    secondBestScore = bestScore;
+                    result.second = result.first;
+                    secondBestIndexPool = bestIndexPool;
+
+                    bestScore = currScore;
+                    result.first = competencePoolIndexes[i];
+                    bestIndexPool = i;
+                }
+                else if (currScore > secondBestScore && currScore != bestScore) {
+                    secondBestScore = currScore;
+                    result.second = competencePoolIndexes[i];
+                    secondBestIndexPool = i;
+                }
+            }
+
+            if ((containsValue(result.first, visitedInterfaces) || containsValue(result.second, visitedInterfaces)) && competencePool.size() > 2)
+            {
+                competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[bestIndexPool]), competencePool.end());
+                competencePoolIndexes.erase(remove(competencePoolIndexes.begin(), competencePoolIndexes.end(), competencePoolIndexes[bestIndexPool]), competencePoolIndexes.end());
+
+                competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[secondBestIndexPool]), competencePool.end());
+                competencePoolIndexes.erase(remove(competencePoolIndexes.begin(), competencePoolIndexes.end(), competencePoolIndexes[secondBestIndexPool]), competencePoolIndexes.end());
+            }
+            else
+            {
+                exec = true;
+            }
+
+        } while (!exec);
     }
 
-    for (int i = 2; i < tournament_pool_length; i++) {
-        currScore = tournament_pool[i]->getInterfaceEvaluation(mean_distance);
-
-        if (currScore > bestScore) {
-            secondBestScore = bestScore;
-            result.second = result.first;
-
-            bestScore = currScore;
-            result.first = tournament_indexes[i];
-        }
-        else if (currScore > secondBestScore && currScore != bestScore) {
-            secondBestScore = currScore;
-            result.second = tournament_indexes[i];
-        }
-    }
 
     return result;
 }
@@ -784,6 +759,38 @@ void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
         }
 }
 
+vector<int> getPool(Interface *(&population)[NBR_INTERFACES], vector<Interface*>& pool, float& mean_distance, bool secondPool = false)
+{
+    float travelDistance = 0.0;
+    vector<int> indexes;
+
+    // POOL FILLING
+    for(int i = 0; i < NBR_INTERFACES; i++){
+        travelDistance += population[i]->distance;
+        int true_index = i;
+
+        if (secondPool){
+            if (population[i]->competence[0] == 1)
+            {
+                pool.push_back(population[i]);
+                indexes.push_back(true_index);
+            }
+        }
+        else{
+            if(population[i]->competence[1] == 1)
+            {
+                pool.push_back(population[i]);
+                indexes.push_back(true_index);
+            }
+        }
+    }
+
+    mean_distance = getMean(travelDistance);
+
+    return indexes;
+
+}
+
 int main()
 {
     // Main algo
@@ -794,7 +801,9 @@ int main()
     cout << "* Number of nodes = " << NBR_NODES << endl << endl;
 
     Interface *starting_population[NBR_INTERFACES];
-    Interface *next_population[NBR_INTERFACES];
+    //Interface *next_population[NBR_INTERFACES];
+
+    vector<int> visitedInterfaces;
 
      //1. Init pop - DONE
     fillPopulation(starting_population);// Fill starting population
@@ -823,29 +832,56 @@ int main()
      //3.
      //while(nbIteration < limit || score qui stagne) // Pas sur que score qui stagne soit relevantdouble t = clock();
      //
+
      clock_t t = clock();
-    bool stop = false;
-     while(t / CLOCKS_PER_SEC < 30)
+     bool stop = false;
+     //while(t / CLOCKS_PER_SEC < 30)
      //while(!stop)
+    for (int x = 0; x < 5; x++)
      {
+         Interface *next_population[NBR_INTERFACES];
+
          for (int i = 0; i < NBR_INTERFACES; i++) {
              next_population[i] = starting_population[i];
          }
+
+         float mean_distance = 0;
+         vector<Interface*> firstCompetencePool;
+         vector<int> firstCompetencePoolIndexes = getPool(starting_population, firstCompetencePool, mean_distance);
+
+         mean_distance = 0;
+         vector<Interface*> secondCompetencePool;
+         vector<int> secondCompetencePoolIndexes= getPool(starting_population, secondCompetencePool, mean_distance, true);
+
         //4. next_pop filled grâce à la selection = selection des parents - DONE
         //5. Croisement dans next_population
 
-        for(int i = 0; i < NBR_INTERFACES; i++){
-            //cout << i << endl;
-            pair<int, int> to_cross = tournamentSelection(next_population);
-            //cout << "after to cross" << endl;
-            //pair<int, int> to_cross{1, 2};
-            crossInterfaces(to_cross.first, to_cross.second, next_population);
-            //cout << "after crossInterfaces1" << endl;
-            to_cross = tournamentSelection(next_population, true);
+        int poolLimit = firstCompetencePool.size();
+
+         while (visitedInterfaces.size() != poolLimit){
+
+             pair<int, int> to_cross = tournamentSelection(next_population, firstCompetencePool, firstCompetencePoolIndexes, visitedInterfaces, mean_distance);
             //cout << "after to cross2" << endl;
             crossInterfaces(to_cross.first, to_cross.second, next_population);
+            cout << to_cross.first << " | "<< to_cross.second << endl;
+             visitedInterfaces.push_back(to_cross.first);
+             visitedInterfaces.push_back(to_cross.second);
             //cout << "after crossInterfaces2" << endl;
         }
+
+         visitedInterfaces.clear();
+         poolLimit = secondCompetencePool.size();
+
+         while (visitedInterfaces.size() != poolLimit){
+
+             pair<int, int> to_cross = tournamentSelection(next_population, secondCompetencePool, secondCompetencePoolIndexes, visitedInterfaces, mean_distance);
+             //cout << "after to cross2" << endl;
+             cout << to_cross.first << " | "<< to_cross.second << endl;
+             crossInterfaces(to_cross.first, to_cross.second, next_population);
+             visitedInterfaces.push_back(to_cross.first);
+             visitedInterfaces.push_back(to_cross.second);
+             //cout << "after crossInterfaces2" << endl;
+         }
 
         //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
         for (int i = 0; i < NBR_INTERFACES; i++) {
@@ -855,8 +891,8 @@ int main()
          updateInterfaceDistance(starting_population);
 
          //7. Evaluer new pop - DONE
-         eval = evaluatePopulation(starting_population);
-         cout << "New pop eval is : " << eval << endl;
+         float eval8 = evaluatePopulation(starting_population);
+         cout << "New pop eval is : " << eval8 << endl;
 
         //stop = true;
          t = clock();
