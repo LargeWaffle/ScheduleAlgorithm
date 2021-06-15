@@ -388,6 +388,9 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], vec
     if (competencePool.size() == 1)
     {
         visitedInterfaces.push_back(competencePoolIndexes[0]);
+        competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[0]), competencePool.end());
+        competencePoolIndexes.erase(remove(competencePoolIndexes.begin(), competencePoolIndexes.end(), competencePoolIndexes[0]), competencePoolIndexes.end());
+
     }
     else
     {
@@ -433,17 +436,15 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], vec
                 }
             }
 
-
-            if ((!containsValue(result.first, visitedInterfaces) && !containsValue(result.second, visitedInterfaces)) && competencePool.size() > 2)
+            if ((!containsValue(result.first, visitedInterfaces) && !containsValue(result.second, visitedInterfaces)) && competencePool.size() >= 2)
             {
                 competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[bestIndexPool]), competencePool.end());
                 competencePoolIndexes.erase(remove(competencePoolIndexes.begin(), competencePoolIndexes.end(), competencePoolIndexes[bestIndexPool]), competencePoolIndexes.end());
 
-                competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[secondBestIndexPool-1]), competencePool.end());
-                competencePoolIndexes.erase(remove(competencePoolIndexes.begin(), competencePoolIndexes.end(), competencePoolIndexes[secondBestIndexPool-1]), competencePoolIndexes.end());
-            }
-            else
-            {
+                int updatedIndex = bestIndexPool > secondBestIndexPool ? secondBestIndexPool : secondBestIndexPool - 1;
+                competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[updatedIndex]), competencePool.end());
+                competencePoolIndexes.erase(remove(competencePoolIndexes.begin(), competencePoolIndexes.end(), competencePoolIndexes[updatedIndex]), competencePoolIndexes.end());
+
                 exec = true;
             }
 
@@ -916,9 +917,13 @@ int main()
              pair<int, int> to_cross = tournamentSelection(next_population, firstCompetencePool, firstCompetencePoolIndexes, visitedInterfaces, mean_distance);
             //cout << "after to cross2" << endl;
             cout << to_cross.first << " | "<< to_cross.second << endl;
-            crossInterfaces(to_cross.first, to_cross.second, next_population);
-             visitedInterfaces.push_back(to_cross.first);
-             visitedInterfaces.push_back(to_cross.second);
+             if(to_cross.first != to_cross.second)
+             {
+                 crossInterfaces(to_cross.first, to_cross.second, next_population);
+                 visitedInterfaces.push_back(to_cross.first);
+                 visitedInterfaces.push_back(to_cross.second);
+             }
+
             //cout << "after crossInterfaces2" << endl;
         }
 
@@ -930,12 +935,18 @@ int main()
              pair<int, int> to_cross = tournamentSelection(next_population, secondCompetencePool, secondCompetencePoolIndexes, visitedInterfaces, mean_distance);
              //cout << "after to cross2" << endl;
              cout << to_cross.first << " | "<< to_cross.second << endl;
-             crossInterfaces(to_cross.first, to_cross.second, next_population);
-             visitedInterfaces.push_back(to_cross.first);
-             visitedInterfaces.push_back(to_cross.second);
+
+             if(to_cross.first != to_cross.second)
+             {
+                crossInterfaces(to_cross.first, to_cross.second, next_population);
+                 visitedInterfaces.push_back(to_cross.first);
+                 visitedInterfaces.push_back(to_cross.second);
+
+             }
+
              //cout << "after crossInterfaces2" << endl;
          }
-
+         visitedInterfaces.clear();
         //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
         for (int i = 0; i < NBR_INTERFACES; i++) {
             starting_population[i] = next_population[i];
