@@ -117,7 +117,8 @@ public:
         return out_object;
     }
 
-    void displayInterface(){
+    void displayInterface()     // General informations about the interface
+    {
 
         cout << "Competences ";
         cout << "[" << competence[0] << ", " << competence[1] << "]" << endl;
@@ -144,7 +145,8 @@ public:
         cout << "and he travelled " << distance << " m" << endl;
     }
 
-    void displayTimeTable(){
+    void displayTimeTable()     // Display the interface's schedule
+    {
 
         for (pair<int, vector<Formation*>> element : time_table) {
 
@@ -162,7 +164,7 @@ public:
         }
     }
 
-    int getPenalty()
+    int getPenalty()        // Get the number of formations who doesn't match with the interface's specialities
     {
         int nbPenalty = 0;
 
@@ -178,11 +180,9 @@ public:
         return nbPenalty;
     }
 
-    float getInterfaceEvaluation(float meandistance)
+    float getInterfaceEvaluation(float meandistance)        // Evaluate an individual (used in selection)
     {
         int nbSpeciality = (int)assigned_missions.size() - getPenalty();
-
-        int emptyInterface = distance == 0 ? 50 : 0;
 
         float score = 0.7 * (nbSpeciality) + 0.3 * (1/ abs(meandistance - distance));
         this->fitness = score;

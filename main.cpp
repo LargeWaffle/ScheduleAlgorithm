@@ -422,11 +422,10 @@ bool containsValue(int value, vector<int>& visitedIndex)
 
 pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], vector<Interface*>& competencePool, vector<int>& competencePoolIndexes, vector<int>& visitedInterfaces, float mean_distance) {
 
-    // SELECT PARTICIPANTS
     pair<int, int> result;
     bool exec = false;
 
-    if (competencePool.size() == 1)
+    if (competencePool.size() == 1)     // Case if the pool has a size which is odd
     {
         visitedInterfaces.push_back(competencePoolIndexes[0]);
         competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[0]), competencePool.end());
@@ -435,7 +434,7 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], vec
     }
     else
     {
-        do
+        do      // Process to select the 2 best interfaces in the pool
         {
             int bestIndexPool, secondBestIndexPool;
             float bestScore, secondBestScore, currScore;
@@ -477,6 +476,8 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], vec
                 }
             }
 
+            // Control whether or not the pair has already been selected
+
             if ((!containsValue(result.first, visitedInterfaces) && !containsValue(result.second, visitedInterfaces)) && competencePool.size() >= 2)
             {
                 competencePool.erase(remove(competencePool.begin(), competencePool.end(), competencePool[bestIndexPool]), competencePool.end());
@@ -496,6 +497,7 @@ pair<int, int> tournamentSelection(Interface *(&population)[NBR_INTERFACES], vec
     return result;
 }
 
+// Get the first formation we find that doesn't match with an interface speciality
 pair<int, int> getNonSpecialityForm(Interface * (&inter), vector<pair<int, int>>& visitedIndex)
 {
     bool quit = false;
@@ -526,6 +528,7 @@ pair<int, int> getNonSpecialityForm(Interface * (&inter), vector<pair<int, int>>
     return result;
 }
 
+// Get a random formation assigned to the interface
 pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visitedIndex)
 {
     random_device rd;
@@ -557,6 +560,7 @@ pair<int, int> getRandomForm(Interface * (&inter), vector<pair<int, int>>& visit
     return result;
 }
 
+// Check if two formations can be swapped
 tuple <bool, int, int> isSwappable(int indexFirstInterface, int indexSecondInterface, pair<int, int>& firstFormIndexes, pair<int, int>& secondFormIndexes, Interface *(&population)[NBR_INTERFACES])
 {
     Interface * copy_pop[NBR_INTERFACES];
@@ -601,7 +605,7 @@ tuple <bool, int, int> isSwappable(int indexFirstInterface, int indexSecondInter
     return {r1.first && r2.first, r1.second, r2.second};
 }
 
-// add pair<Interface*, Interface*> instead of void if problems occur
+// Makes the swap changes after some controls
 void crossInterfaces(int indexFirstInterface, int indexSecondInterface, Interface *(&population)[NBR_INTERFACES])
 {
     bool swap = false;
@@ -761,7 +765,7 @@ void balancingPopulation(Interface *(&population)[NBR_INTERFACES])
     }
 }
 
-// try to assign remaining formations to given population
+// Tries to assign remaining formations to given population
 void mutationOperator(Interface *(&population)[NBR_INTERFACES])
 {
     if(!FORMATION_INDEXES.empty())
@@ -805,7 +809,7 @@ void mutationOperator(Interface *(&population)[NBR_INTERFACES])
     }
 }
 
-
+// Select sub parts of the population which matches a given competence (secondPool)
 vector<int> getPool(Interface *(&population)[NBR_INTERFACES], vector<Interface*>& pool, float& mean_distance, bool secondPool = false)
 {
     float travelDistance = 0.0;
@@ -874,7 +878,7 @@ int main()
 
     vector<int> visitedInterfaces;
 
-    //1. Init pop - DONE
+    //1. Population initialization
     fillPopulation(starting_population);// Fill starting population
     fillFormations(formations_list);
 
@@ -882,13 +886,12 @@ int main()
 
     isSolutionFeasible(starting_population);
 
-    //2. Eval pop - DONE
+    //2. Population evaluation
     float eval = evaluatePopulation(starting_population);
 
+    // Balance population's schedules
     for (int times = 0; times < 100; times+=1)
-    {
         balancingPopulation(starting_population);
-    }
 
     updateInterfaceDistance(starting_population);
 
@@ -900,9 +903,9 @@ int main()
 
     //3.
 
-    clock_t t = clock();
+    clock_t t = clock();    // Get starting time
 
-    while(t / CLOCKS_PER_SEC < time_limit)
+    while(t / CLOCKS_PER_SEC < time_limit)      // Generates until time runs out
 
     {
         Interface *next_population[NBR_INTERFACES];
@@ -912,6 +915,7 @@ int main()
             next_population[i] = starting_population[i];
         }
 
+        // Get 2 sub pools of competence
         float mean_distance = 0;
         vector<Interface*> firstCompetencePool;
         vector<int> firstCompetencePoolIndexes = getPool(starting_population, firstCompetencePool, mean_distance);
@@ -920,15 +924,15 @@ int main()
         vector<Interface*> secondCompetencePool;
         vector<int> secondCompetencePoolIndexes= getPool(starting_population, secondCompetencePool, mean_distance, true);
 
-        //4. next_pop filled grâce à la selection = selection des parents - DONE
-        //5. Croisement dans next_population
-
         int poolLimit = int(firstCompetencePool.size());
 
-        while (visitedInterfaces.size() != poolLimit){
+        while (visitedInterfaces.size() != poolLimit)   // Cross interfaces in the second pool
+        {
 
+            //5. Selection
             pair<int, int> to_cross = tournamentSelection(next_population, firstCompetencePool, firstCompetencePoolIndexes, visitedInterfaces, mean_distance);
 
+            //6. Crosses interfaces
             if(to_cross.first != to_cross.second)
             {
                 crossInterfaces(to_cross.first, to_cross.second, next_population);
@@ -941,7 +945,8 @@ int main()
         visitedInterfaces.clear();
         poolLimit = int(secondCompetencePool.size());
 
-        while (visitedInterfaces.size() != poolLimit){
+        while (visitedInterfaces.size() != poolLimit)   // Cross interfaces in the second pool
+        {
 
             pair<int, int> to_cross = tournamentSelection(next_population, secondCompetencePool, secondCompetencePoolIndexes, visitedInterfaces, mean_distance);
 
@@ -958,16 +963,14 @@ int main()
         mutationOperator(starting_population);
 
         //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
-        for (int i = 0; i < NBR_INTERFACES; i++) {
+        for (int i = 0; i < NBR_INTERFACES; i++)
             starting_population[i] = next_population[i];
-        }
 
         updateInterfaceDistance(starting_population);
 
-
         t = clock();
 
-    } //FIN WHILE
+    } // END OF TIME LIMITED WHILE
 
     print_population(starting_population);
 

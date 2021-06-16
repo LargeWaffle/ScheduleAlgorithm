@@ -50,11 +50,6 @@ public:
         return *this;
     }
 
-    ~Formation()
-    {
-        //delete [] position;
-    }
-
     friend ostream& operator<<(ostream& out_object, Formation& form)
     {
         out_object << form.startHour << " - " << form.endHour;
@@ -62,7 +57,7 @@ public:
         return out_object;
     }
 
-    void displayFormation()
+    void displayFormation()     // General information about the formation
     {
         cout << "Formation ID "<< id;
         cout << " - day " << day << endl;
