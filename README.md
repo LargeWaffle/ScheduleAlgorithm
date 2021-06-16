@@ -11,9 +11,10 @@ At the start of the program, you'll be asked to select the search time of our al
 To explain quickly what we're doing. We're starting with an empty solution, we fill it first via a greedy algorithm and then we balance the formations assigned via our balancing function. Finally during the search time given, we'll apply one crossing operator that will switch formations between interfaces and we'll also apply a mutation operator that will try, after each generation to assign the formations that had not been assigned yet.
 
 ## Running
-
+```
 $ git clone https://github.com/LargeWaffle/ScheduleAlgorithm
 $ cd ScheduleAlgorithm
 
 $ bash build.sh
 $ bash run.sh
+```
