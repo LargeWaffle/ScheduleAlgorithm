@@ -4,7 +4,7 @@
 #include <functional>
 #include <ctime>
 
-#include "instances/instance-formations96.h"
+#include "instances/instance-formations320.h"
 #include "Interface.h"
 
 using namespace std;
