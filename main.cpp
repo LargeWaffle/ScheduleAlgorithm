@@ -4,7 +4,7 @@
 #include <functional>
 #include <ctime>
 
-#include "instances/instance-formations320.h"
+#include "instances/instance-formations60.h"
 #include "Interface.h"
 
 using namespace std;
@@ -309,54 +309,84 @@ void greedyFirstSolution(Interface *(&population)[NBR_INTERFACES])
 // Crossover Operator on two interfaces given two formation slots
 void crossingOperator(Interface *(&population)[NBR_INTERFACES], int indexInterfaceOne, int indexInterfaceTwo, int indexFormationOne, int indexFormationTwo, int index1, int index2)
 {
-    int durationFormationOne = formations_list[indexFormationOne]->endHour - formations_list[indexFormationOne]->startHour;
-    int durationFormationTwo = formations_list[indexFormationTwo]->endHour - formations_list[indexFormationTwo]->startHour;
-    int dayF1 = day(indexFormationOne);
-    int dayF2 = day(indexFormationTwo);
+    pair<bool,int> result1 = isFree(indexInterfaceOne, indexFormationTwo,population);
+    pair<bool,int> result2 = isFree(indexInterfaceTwo,indexFormationOne,population);
 
-    //reversal of assigned missions
-    population[indexInterfaceOne]->assigned_missions.erase(remove(population[indexInterfaceOne]->assigned_missions.begin(), population[indexInterfaceOne]->assigned_missions.end(), indexFormationOne), population[indexInterfaceOne]->assigned_missions.end());
-    population[indexInterfaceTwo]->assigned_missions.erase(remove(population[indexInterfaceTwo]->assigned_missions.begin(), population[indexInterfaceTwo]->assigned_missions.end(), indexFormationTwo), population[indexInterfaceTwo]->assigned_missions.end());
-
-    population[indexInterfaceOne]->assigned_missions.insert(population[indexInterfaceOne]->assigned_missions.begin(),indexFormationTwo);
-    population[indexInterfaceTwo]->assigned_missions.insert(population[indexInterfaceTwo]->assigned_missions.begin(),indexFormationOne);
-
-    population[indexInterfaceOne]->time_table[dayF1].erase(population[indexInterfaceOne]->time_table[dayF1].begin() + index1);
-    population[indexInterfaceTwo]->time_table[dayF2].erase(population[indexInterfaceTwo]->time_table[dayF2].begin() + index2);
-
-    population[indexInterfaceOne]->hoursWorked -= durationFormationOne;
-    population[indexInterfaceOne]->hoursWorkedPerDay[dayF1] -= durationFormationOne;
-
-    population[indexInterfaceTwo]->hoursWorked -= durationFormationTwo;
-    population[indexInterfaceTwo]->hoursWorkedPerDay[dayF2] -= durationFormationTwo;
-
-    population[indexInterfaceOne]->hoursWorked += durationFormationTwo;
-    population[indexInterfaceOne]->hoursWorkedPerDay[dayF2] += durationFormationTwo;
-
-    population[indexInterfaceTwo]->hoursWorked += durationFormationOne;
-    population[indexInterfaceTwo]->hoursWorkedPerDay[dayF1] += durationFormationOne;
-
-
-    if (!population[indexInterfaceOne]->time_table[dayF2].empty())
+    if(result1.first && result2.first)
     {
-        population[indexInterfaceOne]->time_table[dayF2].insert(
-                population[indexInterfaceOne]->time_table[dayF2].begin() + index1, formations_list[indexFormationTwo]);
-    }
-    else
-    {
-        population[indexInterfaceOne]->time_table[dayF2].push_back(formations_list[indexFormationTwo]);
-    }
+        int durationFormationOne = formations_list[indexFormationOne]->endHour - formations_list[indexFormationOne]->startHour;
+        int durationFormationTwo = formations_list[indexFormationTwo]->endHour - formations_list[indexFormationTwo]->startHour;
+        int dayF1 = day(indexFormationOne);
+        int dayF2 = day(indexFormationTwo);
+
+        //reversal of assigned missions
+        population[indexInterfaceOne]->assigned_missions.erase(remove(population[indexInterfaceOne]->assigned_missions.begin(), population[indexInterfaceOne]->assigned_missions.end(), indexFormationOne), population[indexInterfaceOne]->assigned_missions.end());
+        population[indexInterfaceTwo]->assigned_missions.erase(remove(population[indexInterfaceTwo]->assigned_missions.begin(), population[indexInterfaceTwo]->assigned_missions.end(), indexFormationTwo), population[indexInterfaceTwo]->assigned_missions.end());
+
+        population[indexInterfaceOne]->assigned_missions.insert(population[indexInterfaceOne]->assigned_missions.begin(),indexFormationTwo);
+        population[indexInterfaceTwo]->assigned_missions.insert(population[indexInterfaceTwo]->assigned_missions.begin(),indexFormationOne);
+
+        population[indexInterfaceOne]->time_table[dayF1].erase(population[indexInterfaceOne]->time_table[dayF1].begin() + index1);
+        population[indexInterfaceTwo]->time_table[dayF2].erase(population[indexInterfaceTwo]->time_table[dayF2].begin() + index2);
+
+        population[indexInterfaceOne]->hoursWorked -= durationFormationOne;
+        population[indexInterfaceOne]->hoursWorkedPerDay[dayF1] -= durationFormationOne;
+
+        population[indexInterfaceTwo]->hoursWorked -= durationFormationTwo;
+        population[indexInterfaceTwo]->hoursWorkedPerDay[dayF2] -= durationFormationTwo;
+
+        population[indexInterfaceOne]->hoursWorked += durationFormationTwo;
+        population[indexInterfaceOne]->hoursWorkedPerDay[dayF2] += durationFormationTwo;
+
+        population[indexInterfaceTwo]->hoursWorked += durationFormationOne;
+        population[indexInterfaceTwo]->hoursWorkedPerDay[dayF1] += durationFormationOne;
 
 
-    if (!population[indexInterfaceTwo]->time_table[dayF1].empty())
-    {
-        population[indexInterfaceTwo]->time_table[dayF1].insert(
-                population[indexInterfaceTwo]->time_table[dayF1].begin() + index2, formations_list[indexFormationOne]);
+        if (!population[indexInterfaceOne]->time_table[dayF2].empty())
+        {
+            if(population[indexInterfaceOne]->time_table[dayF2][0]->id == -1)
+            {
+                population[indexInterfaceOne]->time_table[dayF2].at(0) = formations_list[indexFormationTwo];
+            }
+            else if(population[indexInterfaceOne]->time_table[dayF2].size() <= result1.second)
+            {
+                population[indexInterfaceOne]->time_table[dayF2].push_back(formations_list[indexFormationTwo]);
+            }
+            else
+            {
+                population[indexInterfaceOne]->time_table[dayF2].insert(
+                        population[indexInterfaceOne]->time_table[dayF2].begin() + result1.second, formations_list[indexFormationTwo]);
+            }
+
+        }
+        else
+        {
+            population[indexInterfaceOne]->time_table[dayF2].push_back(formations_list[indexFormationTwo]);
+        }
+
+
+        if (!population[indexInterfaceTwo]->time_table[dayF1].empty())
+        {
+            if(population[indexInterfaceTwo]->time_table[dayF1][0]->id == -1)
+            {
+                population[indexInterfaceTwo]->time_table[dayF1].at(0) = formations_list[indexFormationOne];
+            }
+            else if(population[indexInterfaceTwo]->time_table[dayF1].size() <= result2.second)
+            {
+                population[indexInterfaceTwo]->time_table[dayF1].push_back(formations_list[indexFormationOne]);
+            }
+            else
+            {
+                population[indexInterfaceTwo]->time_table[dayF1].insert(
+                        population[indexInterfaceTwo]->time_table[dayF1].begin() + result2.second, formations_list[indexFormationOne]);
+            }
+        }
+        else
+        {
+            population[indexInterfaceTwo]->time_table[dayF1].push_back(formations_list[indexFormationOne]);
+        }
     }
-    else
-    {
-        population[indexInterfaceTwo]->time_table[dayF1].push_back(formations_list[indexFormationOne]);
-    }
+
 
 
 }
@@ -640,7 +670,7 @@ inline void print_population(Interface *(&population)[NBR_INTERFACES])
 
     for( auto &elem : population)
     {
-        cout << "interface : " << index << endl;
+        cout << "Interface : " << index << endl;
         elem->displayTimeTable();
         index++;
     }
@@ -750,7 +780,7 @@ void mutationOperator(Interface *(&population)[NBR_INTERFACES])
                         //we have to place the formation at the right place on the day
                         if (result.second == 0) //replace first null formation
                         {
-                            population[indexInterface]->time_table[day_].at(0) = formations_list[formationIndex];
+                            population[indexInterface]->time_table[day_][0] = formations_list[formationIndex];
                         }
                         else //insert at right time of the day
                         {
@@ -925,6 +955,7 @@ int main()
         }
         visitedInterfaces.clear();
 
+        mutationOperator(starting_population);
 
         //6. Contenu de next pop dans starting pop | Passage à la nouvelle gen
         for (int i = 0; i < NBR_INTERFACES; i++) {
@@ -933,9 +964,6 @@ int main()
 
         updateInterfaceDistance(starting_population);
 
-        //7. Evaluer new pop - DONE
-        float eval8 = evaluatePopulation(starting_population);
-        cout << "New pop eval is : " << eval8 << endl;
 
         t = clock();
 

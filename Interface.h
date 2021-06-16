@@ -184,7 +184,7 @@ public:
 
         int emptyInterface = distance == 0 ? 50 : 0;
 
-        float score = 0.7 * (nbSpeciality + emptyInterface) + 0.3 * (1/ abs(meandistance - distance));
+        float score = 0.7 * (nbSpeciality) + 0.3 * (1/ abs(meandistance - distance));
         this->fitness = score;
 
         return score;
